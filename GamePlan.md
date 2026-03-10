@@ -1,0 +1,248 @@
+# Moja Micha – Lista zadań
+
+> Aplikacja mobilna do monitorowania diety i liczenia kalorii.
+> Backendless, React Native (Expo), tylko Android (na razie).
+
+---
+
+## 📋 Ustalenia i decyzje projektowe
+
+### Stack technologiczny
+- **Framework:** React Native z Expo (managed workflow)
+- **Storage:** `expo-sqlite` (SQLite lokalnie na urządzeniu)
+- **Projekt:** Istniejące repo `HelloWorld_ReactNative` – pełna rewolucja nazwy, zawartości i struktury folderów
+- **Cel platformy:** Android (iOS opcjonalnie w przyszłości)
+
+### Motyw wizualny
+- **Domyślny (ciemny):** „Fitness Neon" — tło `#0F0F1A`, akcenty `#00E5FF` + `#FF6B35`
+- **Alternatywny (jasny):** „Fresh & Vibrant" — tło `#F8F9FA`, akcenty `#FF6B6B` + `#4ECDC4`
+- **Przełączanie:** w Ustawieniach (domyślnie z systemu)
+- **Styl:** Minimalistyczny, czysty, praktyczny
+
+### Język
+- Polski i Angielski
+- Przełączanie w Ustawieniach (domyślnie z systemu)
+
+### Pola posiłku
+| Pole | Opis |
+|---|---|
+| **Nazwa posiłku** | Auto-wybierana wg pory dnia, edytowalna ręcznie |
+| **Godzina** | Auto z aktualną godziną, edytowalna ręcznie |
+| **Posiłek** | Główne pole – wpisywane ręcznie (GBoard + dyktowanie) |
+| **Kalorie** | Opcjonalne – ręcznie w v1, docelowo przez AI |
+| **Analiza AI** | Opcjonalne – notatki własne w v1, docelowo przez AI |
+
+### Auto-wybór nazwy posiłku wg pory dnia
+| Nazwa | Godziny |
+|---|---|
+| Śniadanie | 05:00 – 10:00 |
+| II Śniadanie | 10:00 – 12:00 |
+| Obiad | 12:00 – 15:00 |
+| Podwieczorek | 15:00 – 18:00 |
+| Kolacja | 18:00 – 21:00 |
+| Przekąska | 21:00 – 05:00 (catch-all poza przedziałami) |
+
+Każda kategoria może być ręcznie nadpisana inną przez użytkownika.
+
+### Ulubione
+- **Szablony:** tworzone ręcznie w specjalnym widoku (nazwa + treść posiłku + opcjonalnie kcal)
+- **Oznaczone wpisy:** konkretne historyczne wpisy oznaczone gwiazdką ⭐
+- **Kopiowanie z ulubionych:** nowy wpis z aktualną godziną i datą, treść Posiłku skopiowana, wszystko edytowalne
+
+### Widok dzienny
+- Lista posiłków (domyślnie od najnowszego, sortowanie zmienialne)
+- Suma kalorii na górze
+- Pasek postępu kalorii (tylko jeśli ustawiony dzienny cel)
+- Streak 🔥 (np. „5 dni z rzędu") – mały, dyskretny
+
+### Statystyki
+- Wykres słupkowy – kalorie każdego dnia (7 / 30 dni)
+- Linia trendu (średnia krocząca)
+- Podsumowanie: średnia, maksimum, minimum
+- Streak – ile dni z rzędu logowano posiłki
+
+### Ustawienia
+- Motyw: Ciemny / Jasny / Z systemu
+- Język: Polski / Angielski / Z systemu
+- Dzienny cel kalorii (opcjonalny, można wyłączyć)
+
+### Wersjonowanie
+- **v1** – Pełna aplikacja bez AI (ręczny wpis kalorii, pole Analiza AI jako notatki)
+- **v2** – Integracja z OpenAI: auto-kalkulacja kalorii + komunikat o postępie dnia
+- **v3** – Android Widget 1×1 (szybki wpis spoza aplikacji, opcjonalnie z uruchomieniem mikrofonu GBoard)
+
+---
+
+## 🗂️ Struktura folderów (docelowa)
+
+```
+moja-micha/
+├── app/                    # Ekrany (Expo Router lub React Navigation)
+│   ├── (tabs)/
+│   │   ├── today.tsx       # Dziś
+│   │   ├── history.tsx     # Historia
+│   │   ├── favorites.tsx   # Ulubione
+│   │   ├── stats.tsx       # Statystyki
+│   │   └── settings.tsx    # Ustawienia
+│   └── _layout.tsx
+├── components/             # Wspólne komponenty
+├── db/                     # SQLite – schematy, migracje, zapytania
+├── hooks/                  # Custom hooks
+├── i18n/                   # Lokalizacja (PL / EN)
+├── theme/                  # Kolory, typography, dark/light
+├── utils/                  # Helpers (pora dnia → nazwa posiłku, itp.)
+└── assets/
+```
+
+---
+
+## ✅ Zadania do wykonania
+
+### 0. Przygotowanie projektu
+- [ ] Zmiana nazwy repozytorium i folderu na `moja-micha`
+- [ ] Wyczyszczenie projektu HelloWorld (usunięcie przykładowego kodu)
+- [ ] Instalacja zależności: `expo-sqlite`, `react-native-reanimated`, `react-native-gesture-handler`, `@react-navigation/native`, `@react-navigation/bottom-tabs`, `react-native-safe-area-context`, `react-native-screens`
+- [ ] Instalacja i18n: `expo-localization`, `i18next`, `react-i18next`
+- [ ] Instalacja kalendarza: `react-native-calendars`
+- [ ] Instalacja bottom sheet: `@gorhom/bottom-sheet`
+- [ ] Konfiguracja Expo Router lub React Navigation
+- [ ] Konfiguracja TypeScript (jeśli nie ma)
+
+### 1. Baza danych (SQLite)
+- [ ] Projektowanie schematu:
+  - Tabela `meals` (id, date, time, meal_type, meal_text, calories, ai_analysis, created_at, updated_at)
+  - Tabela `favorites` (id, type [template/starred], name, meal_text, calories, source_meal_id, created_at)
+  - Tabela `settings` (key, value)
+- [ ] Implementacja migracji bazy danych
+- [ ] Implementacja CRUD dla posiłków
+- [ ] Implementacja CRUD dla ulubionych
+- [ ] Implementacja zapisu i odczytu ustawień
+
+### 2. System motywów (Theme)
+- [ ] Definicja tokenów kolorów dla motywu ciemnego (Fitness Neon)
+- [ ] Definicja tokenów kolorów dla motywu jasnego (Fresh & Vibrant)
+- [ ] ThemeProvider + hook `useTheme()`
+- [ ] Obsługa automatycznego wykrywania motywu systemowego
+- [ ] Przełączanie i zapamiętywanie motywu w ustawieniach
+
+### 3. Internacjonalizacja (i18n)
+- [ ] Konfiguracja `i18next` z `expo-localization`
+- [ ] Tłumaczenia PL – wszystkie teksty UI
+- [ ] Tłumaczenia EN – wszystkie teksty UI
+- [ ] Automatyczne wykrywanie języka systemu
+- [ ] Przełączanie i zapamiętywanie języka w ustawieniach
+
+### 4. Nawigacja
+- [ ] Pasek zakładek (bottom tab bar) z 5 zakładkami:
+  - 🍽️ Dziś
+  - 📅 Historia
+  - ⭐ Ulubione
+  - 📊 Statystyki
+  - ⚙️ Ustawienia
+- [ ] Ikonki dla każdej zakładki
+
+### 5. Komponent widoku dnia (współdzielony)
+- [ ] Lista posiłków z danego dnia
+- [ ] Sortowanie: od najnowszego / od najstarszego
+- [ ] Suma kalorii na górze
+- [ ] Pasek postępu względem dziennego celu (jeśli ustawiony)
+- [ ] Streak 🔥 (dyskretny, w nagłówku)
+- [ ] Swipe w lewo/prawo między dniami
+- [ ] Obsługa pustego stanu (brak posiłków)
+
+### 6. Ekran: Dziś
+- [ ] Komponent widoku dnia z datą = dzisiaj
+- [ ] Nagłówek z datą i streakiem
+- [ ] Przycisk FAB (+) – szybki wpis (bottom sheet)
+- [ ] Swipe między dniami
+
+### 7. Formularz dodawania / edycji posiłku
+- [ ] **Bottom sheet** (podstawowy widok – szybki wpis):
+  - Pole „Posiłek" (multiline, obsługuje GBoard + dyktowanie)
+  - Obsługa klawiatury (KeyboardAvoidingView – content się przesuwa, nie zasłania)
+  - Opcja rozwinięcia do pełnego formularza
+- [ ] **Pełny formularz** (rozwinięty):
+  - Nazwa posiłku (picker z listą + auto-wybór wg pory dnia)
+  - Godzina (time picker, domyślnie aktualna)
+  - Pole „Posiłek"
+  - Kalorie (opcjonalne, numeryczne)
+  - Analiza AI / notatki (opcjonalne, multiline)
+- [ ] Walidacja: pole „Posiłek" wymagane
+- [ ] Zapis nowego posiłku
+- [ ] Edycja istniejącego posiłku
+- [ ] Możliwość logowania posiłku wstecz (zmiana daty)
+- [ ] Wybór z ulubionych w formularzu
+
+### 8. Ekran: Historia
+- [ ] Widok kalendarza (`react-native-calendars`)
+- [ ] Oznaczenie dni z wpisami na kalendarzu (kropka/kolor)
+- [ ] Po wybraniu daty: widok dnia z paskiem mini-kalendarza na górze
+- [ ] Swipe między dniami w widoku historii
+- [ ] Edycja posiłków z poprzednich dni
+
+### 9. Ekran: Ulubione
+- [ ] Zakładki lub sekcje: Szablony | Oznaczone gwiazdką
+- [ ] **Szablony:**
+  - Lista szablonów
+  - Tworzenie nowego szablonu (nazwa, treść, opcjonalnie kcal)
+  - Edycja szablonu
+  - Usuwanie szablonu
+- [ ] **Oznaczone gwiazdką:**
+  - Lista historycznych wpisów z gwiazdką
+  - Możliwość odpinania gwiazdki
+- [ ] Użycie ulubionego → nowy wpis z aktualną godziną, treść skopiowana
+
+### 10. Ekran: Statystyki
+- [ ] Przełącznik widoku: 7 dni / 30 dni
+- [ ] Wykres słupkowy – kalorie per dzień
+- [ ] Linia trendu (średnia krocząca)
+- [ ] Podsumowanie: średnia / maks / min dzienna
+- [ ] Streak: bieżący i rekordowy
+- [ ] Obsługa braku danych (pusty stan)
+
+### 11. Ekran: Ustawienia
+- [ ] Motyw: Ciemny / Jasny / Z systemu
+- [ ] Język: Polski / Angielski / Z systemu
+- [ ] Dzienny cel kalorii (pole numeryczne, możliwość wyłączenia)
+- [ ] Zapis ustawień do SQLite
+- [ ] Natychmiastowe zastosowanie zmiany motywu i języka
+
+### 12. Ostatnie posiłki
+- [ ] Automatyczna lista N ostatnich unikalnych wpisów pola „Posiłek"
+- [ ] Dostępna z formularza jako podpowiedź / autocomplete
+
+### 13. Oznaczanie gwiazdką
+- [ ] Przycisk ⭐ przy każdym posiłku na liście
+- [ ] Togglowanie ulubionych (dodaj/usuń ze strony ulubionych)
+
+### 14. Jakość i dobre praktyki
+- [ ] TypeScript – typowanie wszystkich danych i propsów
+- [ ] Obsługa błędów bazy danych
+- [ ] Loading states (skeleton / spinner)
+- [ ] Responsywność (różne rozmiary ekranów Android)
+- [ ] Dostępność (accessibilityLabel na przyciskach)
+- [ ] Brak hardcoded strings (wszystko przez i18n)
+
+---
+
+## 🚀 Plan wersjonowania
+
+### v1 – Gotowa aplikacja (bez AI)
+Wszystkie zadania 0–14 powyżej.
+
+### v2 – Integracja z OpenAI
+- [ ] Ekran ustawień: pole na klucz API OpenAI
+- [ ] Po zapisaniu posiłku: auto-wysyłka treści do LLM
+- [ ] Zwrot: wyliczone kalorie + analiza (uzupełniają pola automatycznie)
+- [ ] Komunikat dzienny: jak idzie względem celu kalorycznego
+- [ ] Obsługa przypadku braku sieci / błędu API
+
+### v3 – Android Widget
+- [ ] Widget 1×1 na ekranie głównym Androida
+- [ ] Jedno kliknięcie → uruchamia aplikację z otwartym bottom sheetem (szybki wpis)
+- [ ] Opcjonalnie: uruchomienie mikrofonu GBoard bezpośrednio z widgetu
+- [ ] Implementacja: `react-native-android-widget`
+
+---
+
+*Ostatnia aktualizacja: 2026-03-10*
