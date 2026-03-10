@@ -99,14 +99,14 @@ moja-micha/
 ## ✅ Zadania do wykonania
 
 ### 0. Przygotowanie projektu
-- [ ] Zmiana nazwy repozytorium i folderu na `moja-micha`
-- [ ] Wyczyszczenie projektu HelloWorld (usunięcie przykładowego kodu)
-- [ ] Instalacja zależności: `expo-sqlite`, `react-native-reanimated`, `react-native-gesture-handler`, `@react-navigation/native`, `@react-navigation/bottom-tabs`, `react-native-safe-area-context`, `react-native-screens`
-- [ ] Instalacja i18n: `expo-localization`, `i18next`, `react-i18next`
-- [ ] Instalacja kalendarza: `react-native-calendars`
-- [ ] Instalacja bottom sheet: `@gorhom/bottom-sheet`
-- [ ] Konfiguracja Expo Router lub React Navigation
-- [ ] Konfiguracja TypeScript (jeśli nie ma)
+- [x] Zmiana nazwy repozytorium i folderu na `moja-micha`
+- [x] Wyczyszczenie projektu HelloWorld (usunięcie przykładowego kodu)
+- [x] Instalacja zależności: `expo-sqlite`, `react-native-reanimated`, `react-native-gesture-handler`, `@react-navigation/native`, `@react-navigation/bottom-tabs`, `react-native-safe-area-context`, `react-native-screens`
+- [x] Instalacja i18n: `expo-localization`, `i18next`, `react-i18next`
+- [x] Instalacja kalendarza: `react-native-calendars`
+- [x] Instalacja bottom sheet: `@gorhom/bottom-sheet`
+- [x] Konfiguracja Expo Router lub React Navigation
+- [x] Konfiguracja TypeScript (jeśli nie ma)
 
 ### 1. Baza danych (SQLite)
 - [ ] Projektowanie schematu:
@@ -133,13 +133,13 @@ moja-micha/
 - [ ] Przełączanie i zapamiętywanie języka w ustawieniach
 
 ### 4. Nawigacja
-- [ ] Pasek zakładek (bottom tab bar) z 5 zakładkami:
+- [x] Pasek zakładek (bottom tab bar) z 5 zakładkami:
   - 🍽️ Dziś
   - 📅 Historia
   - ⭐ Ulubione
   - 📊 Statystyki
   - ⚙️ Ustawienia
-- [ ] Ikonki dla każdej zakładki
+- [x] Ikonki dla każdej zakładki
 
 ### 5. Komponent widoku dnia (współdzielony)
 - [ ] Lista posiłków z danego dnia
