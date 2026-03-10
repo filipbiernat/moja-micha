@@ -109,14 +109,14 @@ moja-micha/
 - [x] Konfiguracja TypeScript (jeśli nie ma)
 
 ### 1. Baza danych (SQLite)
-- [ ] Projektowanie schematu:
+- [x] Projektowanie schematu:
   - Tabela `meals` (id, date, time, meal_type, meal_text, calories, ai_analysis, created_at, updated_at)
   - Tabela `favorites` (id, type [template/starred], name, meal_text, calories, source_meal_id, created_at)
   - Tabela `settings` (key, value)
-- [ ] Implementacja migracji bazy danych
-- [ ] Implementacja CRUD dla posiłków
-- [ ] Implementacja CRUD dla ulubionych
-- [ ] Implementacja zapisu i odczytu ustawień
+- [x] Implementacja migracji bazy danych
+- [x] Implementacja CRUD dla posiłków
+- [x] Implementacja CRUD dla ulubionych
+- [x] Implementacja zapisu i odczytu ustawień
 
 ### 2. System motywów (Theme)
 - [ ] Definicja tokenów kolorów dla motywu ciemnego (Fitness Neon)
