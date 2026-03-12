@@ -1,6 +1,8 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlaceholderScreen } from '../../components/PlaceholderScreen';
 
 export default function HistoryScreen() {
-    return <PlaceholderScreen emoji="📅" title="Historia" subtitle="Ekran historii posiłków" />;
+    const { t } = useTranslation();
+    return <PlaceholderScreen emoji="📅" title={t('tabs.history')} subtitle={t('subtitles.history')} />;
 }

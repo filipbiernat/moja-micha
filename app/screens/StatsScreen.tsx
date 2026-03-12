@@ -1,6 +1,8 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlaceholderScreen } from '../../components/PlaceholderScreen';
 
 export default function StatsScreen() {
-    return <PlaceholderScreen emoji="📊" title="Statystyki" subtitle="Ekran statystyk kalorii" />;
+    const { t } = useTranslation();
+    return <PlaceholderScreen emoji="📊" title={t('tabs.stats')} subtitle={t('subtitles.stats')} />;
 }

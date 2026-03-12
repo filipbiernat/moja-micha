@@ -6,6 +6,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DatabaseProvider } from './db';
 import { ThemeProvider, useTheme } from './theme';
+import { LanguageProvider } from './i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
+import './i18n'; // Inicjalizacja i18next
 
 import TodayScreen from './app/screens/TodayScreen';
 import HistoryScreen from './app/screens/HistoryScreen';
@@ -28,6 +31,7 @@ const Tab = createBottomTabNavigator();
 
 function AppNavigator() {
     const { colors, typography } = useTheme();
+    const { t } = useTranslation();
 
     return (
         <>
@@ -55,7 +59,7 @@ function AppNavigator() {
                     name="Today"
                     component={TodayScreen}
                     options={{
-                        tabBarLabel: 'Dziś',
+                        tabBarLabel: t('tabs.today'),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="🍽️" size={size} />
                         ),
@@ -65,7 +69,7 @@ function AppNavigator() {
                     name="History"
                     component={HistoryScreen}
                     options={{
-                        tabBarLabel: 'Historia',
+                        tabBarLabel: t('tabs.history'),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="📅" size={size} />
                         ),
@@ -75,7 +79,7 @@ function AppNavigator() {
                     name="Favorites"
                     component={FavoritesScreen}
                     options={{
-                        tabBarLabel: 'Ulubione',
+                        tabBarLabel: t('tabs.favorites'),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="⭐" size={size} />
                         ),
@@ -85,7 +89,7 @@ function AppNavigator() {
                     name="Stats"
                     component={StatsScreen}
                     options={{
-                        tabBarLabel: 'Statystyki',
+                        tabBarLabel: t('tabs.stats'),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="📊" size={size} />
                         ),
@@ -95,7 +99,7 @@ function AppNavigator() {
                     name="Settings"
                     component={SettingsScreen}
                     options={{
-                        tabBarLabel: 'Ustawienia',
+                        tabBarLabel: t('tabs.settings'),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="⚙️" size={size} />
                         ),
@@ -113,11 +117,13 @@ export default function App() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <DatabaseProvider>
                 <SafeAreaProvider>
-                    <ThemeProvider>
-                        <NavigationContainer>
-                            <AppNavigator />
-                        </NavigationContainer>
-                    </ThemeProvider>
+                    <LanguageProvider>
+                        <ThemeProvider>
+                            <NavigationContainer>
+                                <AppNavigator />
+                            </NavigationContainer>
+                        </ThemeProvider>
+                    </LanguageProvider>
                 </SafeAreaProvider>
             </DatabaseProvider>
         </GestureHandlerRootView>

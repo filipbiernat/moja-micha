@@ -126,11 +126,11 @@ moja-micha/
 - [x] Przełączanie i zapamiętywanie motywu w ustawieniach
 
 ### 3. Internacjonalizacja (i18n)
-- [ ] Konfiguracja `i18next` z `expo-localization`
-- [ ] Tłumaczenia PL – wszystkie teksty UI
-- [ ] Tłumaczenia EN – wszystkie teksty UI
-- [ ] Automatyczne wykrywanie języka systemu
-- [ ] Przełączanie i zapamiętywanie języka w ustawieniach
+- [x] Konfiguracja `i18next` z `expo-localization`
+- [x] Tłumaczenia PL – wszystkie teksty UI
+- [x] Tłumaczenia EN – wszystkie teksty UI
+- [x] Automatyczne wykrywanie języka systemu
+- [x] Przełączanie i zapamiętywanie języka w ustawieniach
 
 ### 4. Nawigacja
 - [x] Pasek zakładek (bottom tab bar) z 5 zakładkami:

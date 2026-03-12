@@ -1,0 +1,27 @@
+{
+  "tabs": {
+    "today": "Today",
+    "history": "History",
+    "favorites": "Favorites",
+    "stats": "Stats",
+    "settings": "Settings"
+  },
+  "subtitles": {
+    "today": "Today's meals screen",
+    "history": "Meals history screen",
+    "favorites": "Favorite meals screen",
+    "stats": "Calorie statistics screen"
+  },
+  "settings": {
+    "title": "⚙️ Settings",
+    "theme_section": "THEME",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "theme_system": "System",
+    "lang_section": "LANGUAGE",
+    "lang_pl": "Polski",
+    "lang_en": "English",
+    "lang_system": "System",
+    "more_settings_info": "More settings will appear in future versions."
+  }
+}

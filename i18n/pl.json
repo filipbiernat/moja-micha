@@ -1,0 +1,27 @@
+{
+  "tabs": {
+    "today": "Dziś",
+    "history": "Historia",
+    "favorites": "Ulubione",
+    "stats": "Statystyki",
+    "settings": "Ustawienia"
+  },
+  "subtitles": {
+    "today": "Ekran dzisiejszych posiłków",
+    "history": "Ekran historii posiłków",
+    "favorites": "Ekran ulubionych posiłków",
+    "stats": "Ekran statystyk kalorii"
+  },
+  "settings": {
+    "title": "⚙️ Ustawienia",
+    "theme_section": "MOTYW",
+    "theme_dark": "Ciemny",
+    "theme_light": "Jasny",
+    "theme_system": "Z systemu",
+    "lang_section": "JĘZYK",
+    "lang_pl": "Polski",
+    "lang_en": "English",
+    "lang_system": "Z systemu",
+    "more_settings_info": "Więcej ustawień pojawi się w kolejnych wersjach."
+  }
+}

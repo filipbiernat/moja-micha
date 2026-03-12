@@ -1,52 +1,93 @@
 import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme, type ThemePreference, type Theme } from '../../theme';
-
-type ThemeOption = {
-    value: ThemePreference;
-    label: string;
-    emoji: string;
-};
-
-// TODO: i18n
-const THEME_OPTIONS: ThemeOption[] = [
-    { value: 'dark', label: 'Ciemny', emoji: '🌙' },
-    { value: 'light', label: 'Jasny', emoji: '☀️' },
-    { value: 'system', label: 'Z systemu', emoji: '📱' },
-];
+import { useLanguage, type LanguagePreference } from '../../i18n/LanguageProvider';
 
 export default function SettingsScreen() {
     const theme = useTheme();
-    const { preference, setPreference } = theme;
+    const { preference: themePref, setPreference: setThemePref } = theme;
     
+    const { preference: langPref, setPreference: setLangPref } = useLanguage();
+    
+    const { t } = useTranslation();
+
     // Dynamic styles to properly use theme tokens without inline style spam
     const styles = useMemo(() => createStyles(theme), [theme]);
+
+    const THEME_OPTIONS: { value: ThemePreference; label: string; emoji: string }[] = useMemo(() => [
+        { value: 'dark', label: t('settings.theme_dark'), emoji: '🌙' },
+        { value: 'light', label: t('settings.theme_light'), emoji: '☀️' },
+        { value: 'system', label: t('settings.theme_system'), emoji: '📱' },
+    ], [t]);
+
+    const LANG_OPTIONS: { value: LanguagePreference; label: string; emoji: string }[] = useMemo(() => [
+        { value: 'pl', label: t('settings.lang_pl'), emoji: '🇵🇱' },
+        { value: 'en', label: t('settings.lang_en'), emoji: '🇬🇧' },
+        { value: 'system', label: t('settings.lang_system'), emoji: '📱' },
+    ], [t]);
 
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>
-                    ⚙️ Ustawienia
+                    {t('settings.title')}
                 </Text>
             </View>
 
             {/* Theme section */}
             <View style={styles.section}>
                 <Text style={styles.sectionLabel}>
-                    MOTYW
+                    {t('settings.theme_section')}
                 </Text>
                 <View style={styles.card}>
                     {THEME_OPTIONS.map((option, index) => {
-                        const isActive = preference === option.value;
+                        const isActive = themePref === option.value;
                         const isLast = index === THEME_OPTIONS.length - 1;
 
                         return (
                             <React.Fragment key={option.value}>
                                 <TouchableOpacity
                                     style={styles.optionRow}
-                                    onPress={() => setPreference(option.value)}
-                                    accessibilityLabel={`Motyw: ${option.label}`}
+                                    onPress={() => setThemePref(option.value)}
+                                    accessibilityLabel={`${t('settings.theme_section')}: ${option.label}`}
+                                    accessibilityRole="radio"
+                                    accessibilityState={{ checked: isActive }}
+                                >
+                                    <Text style={styles.optionEmoji}>{option.emoji}</Text>
+                                    <Text style={styles.optionLabel}>
+                                        {option.label}
+                                    </Text>
+                                    {isActive && (
+                                        <View style={styles.activeIndicator} />
+                                    )}
+                                </TouchableOpacity>
+                                {!isLast && (
+                                    <View style={styles.divider} />
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+                </View>
+            </View>
+
+            {/* Language section */}
+            <View style={styles.section}>
+                <Text style={styles.sectionLabel}>
+                    {t('settings.lang_section')}
+                </Text>
+                <View style={styles.card}>
+                    {LANG_OPTIONS.map((option, index) => {
+                        const isActive = langPref === option.value;
+                        const isLast = index === LANG_OPTIONS.length - 1;
+
+                        return (
+                            <React.Fragment key={option.value}>
+                                <TouchableOpacity
+                                    style={styles.optionRow}
+                                    onPress={() => setLangPref(option.value)}
+                                    accessibilityLabel={`${t('settings.lang_section')}: ${option.label}`}
                                     accessibilityRole="radio"
                                     accessibilityState={{ checked: isActive }}
                                 >
@@ -69,7 +110,7 @@ export default function SettingsScreen() {
 
             {/* Info */}
             <Text style={styles.infoText}>
-                Więcej ustawień pojawi się w kolejnych wersjach.
+                {t('settings.more_settings_info')}
             </Text>
         </View>
     );
