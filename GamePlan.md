@@ -119,11 +119,11 @@ moja-micha/
 - [x] Implementacja zapisu i odczytu ustawień
 
 ### 2. System motywów (Theme)
-- [ ] Definicja tokenów kolorów dla motywu ciemnego (Fitness Neon)
-- [ ] Definicja tokenów kolorów dla motywu jasnego (Fresh & Vibrant)
-- [ ] ThemeProvider + hook `useTheme()`
-- [ ] Obsługa automatycznego wykrywania motywu systemowego
-- [ ] Przełączanie i zapamiętywanie motywu w ustawieniach
+- [x] Definicja tokenów kolorów dla motywu ciemnego (Fitness Neon)
+- [x] Definicja tokenów kolorów dla motywu jasnego (Fresh & Vibrant)
+- [x] ThemeProvider + hook `useTheme()`
+- [x] Obsługa automatycznego wykrywania motywu systemowego
+- [x] Przełączanie i zapamiętywanie motywu w ustawieniach
 
 ### 3. Internacjonalizacja (i18n)
 - [ ] Konfiguracja `i18next` z `expo-localization`
