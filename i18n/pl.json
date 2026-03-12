@@ -23,5 +23,23 @@
     "lang_en": "English",
     "lang_system": "Z systemu",
     "more_settings_info": "Więcej ustawień pojawi się w kolejnych wersjach."
+  },
+  "mealTypes": {
+    "breakfast": "Śniadanie",
+    "second_breakfast": "II Śniadanie",
+    "lunch": "Obiad",
+    "afternoon_snack": "Podwieczorek",
+    "dinner": "Kolacja",
+    "snack": "Przekąska"
+  },
+  "dayView": {
+    "empty_state_title": "Brak posiłków",
+    "empty_state_subtitle": "Dodaj swój pierwszy posiłek w tym dniu!",
+    "sort_newest": "Od najnowszego",
+    "sort_oldest": "Od najstarszego",
+    "kcal_sum": "Suma kalorii",
+    "kcal_goal": "Cel: {{goal}} kcal",
+    "streak": "{{count}} dzień z rzędu",
+    "streak_plural": "{{count}} dni z rzędu"
   }
 }

@@ -1,8 +1,16 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { PlaceholderScreen } from '../../components/PlaceholderScreen';
+import React, { useState } from 'react';
+import { DayView } from '../../components/DayView';
+
+const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 
 export default function TodayScreen() {
-    const { t } = useTranslation();
-    return <PlaceholderScreen emoji="🍽️" title={t('tabs.today')} subtitle={t('subtitles.today')} />;
+    const [currentDate, setCurrentDate] = useState(getLocalDateString);
+
+    return <DayView date={currentDate} onDateChange={setCurrentDate} />;
 }

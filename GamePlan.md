@@ -142,13 +142,13 @@ moja-micha/
 - [x] Ikonki dla każdej zakładki
 
 ### 5. Komponent widoku dnia (współdzielony)
-- [ ] Lista posiłków z danego dnia
-- [ ] Sortowanie: od najnowszego / od najstarszego
-- [ ] Suma kalorii na górze
-- [ ] Pasek postępu względem dziennego celu (jeśli ustawiony)
-- [ ] Streak 🔥 (dyskretny, w nagłówku)
-- [ ] Swipe w lewo/prawo między dniami
-- [ ] Obsługa pustego stanu (brak posiłków)
+- [x] Lista posiłków z danego dnia
+- [x] Sortowanie: od najnowszego / od najstarszego
+- [x] Suma kalorii na górze
+- [x] Pasek postępu względem dziennego celu (jeśli ustawiony)
+- [x] Streak 🔥 (dyskretny, w nagłówku)
+- [x] Swipe w lewo/prawo między dniami
+- [x] Obsługa pustego stanu (brak posiłków)
 
 ### 6. Ekran: Dziś
 - [ ] Komponent widoku dnia z datą = dzisiaj
