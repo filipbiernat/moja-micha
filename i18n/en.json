@@ -41,5 +41,15 @@
     "kcal_goal": "Goal: {{goal}} kcal",
     "streak": "{{count}} day streak",
     "streak_plural": "{{count}} days streak"
+  },
+  "today": {
+    "quick_entry_title": "Quick meal",
+    "quick_entry_placeholder": "What did you eat?",
+    "quick_entry_open": "Open quick meal entry",
+    "quick_entry_cancel": "Cancel",
+    "quick_entry_save": "Save meal",
+    "quick_entry_saving": "Saving...",
+    "quick_entry_validation_required": "Meal description is required.",
+    "quick_entry_save_error": "Meal could not be saved."
   }
 }
