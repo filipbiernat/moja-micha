@@ -3,6 +3,7 @@ import { StatusBar, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DatabaseProvider } from './db';
 import { ThemeProvider, useTheme } from './theme';
@@ -116,15 +117,17 @@ export default function App() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <DatabaseProvider>
-                <SafeAreaProvider>
-                    <LanguageProvider>
-                        <ThemeProvider>
-                            <NavigationContainer>
-                                <AppNavigator />
-                            </NavigationContainer>
-                        </ThemeProvider>
-                    </LanguageProvider>
-                </SafeAreaProvider>
+                <BottomSheetModalProvider>
+                    <SafeAreaProvider>
+                        <LanguageProvider>
+                            <ThemeProvider>
+                                <NavigationContainer>
+                                    <AppNavigator />
+                                </NavigationContainer>
+                            </ThemeProvider>
+                        </LanguageProvider>
+                    </SafeAreaProvider>
+                </BottomSheetModalProvider>
             </DatabaseProvider>
         </GestureHandlerRootView>
     );
