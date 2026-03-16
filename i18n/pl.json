@@ -63,6 +63,11 @@
     "btn_save": "Zapisz posiłek",
     "btn_saving": "Zapisywanie…",
     "btn_cancel": "Anuluj",
+    "btn_from_favorites": "Z ulubionych",
+    "favorites_picker_title": "Wybierz ulubiony",
+    "favorites_picker_empty": "Brak ulubionych.",
+    "favorites_picker_section_templates": "Szablony",
+    "favorites_picker_section_starred": "Oznaczone gwiazdką",
     "validation_required": "Opis posiłku jest wymagany.",
     "save_error": "Nie udało się zapisać posiłku."
   }

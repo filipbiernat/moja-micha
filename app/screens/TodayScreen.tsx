@@ -70,10 +70,7 @@ export default function TodayScreen() {
                 <Ionicons name="add" size={28} color={colors.textOnAccent} />
             </TouchableOpacity>
 
-            <MealFormSheet
-                ref={formSheetRef}
-                onSaved={handleSaved}
-            />
+            <MealFormSheet ref={formSheetRef} onSaved={handleSaved} />
         </SafeAreaView>
     );
 }

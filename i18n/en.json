@@ -61,8 +61,13 @@
     "btn_expand": "More options",
     "btn_collapse": "Collapse",
     "btn_save": "Save meal",
-    "btn_saving": "Saving…",
+    "btn_saving": "Saving\u2026",
     "btn_cancel": "Cancel",
+    "btn_from_favorites": "From favorites",
+    "favorites_picker_title": "Pick a favorite",
+    "favorites_picker_empty": "No favorites yet.",
+    "favorites_picker_section_templates": "Templates",
+    "favorites_picker_section_starred": "Starred meals",
     "validation_required": "Meal description is required.",
     "save_error": "Could not save the meal."
   }

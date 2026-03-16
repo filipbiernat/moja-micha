@@ -1,10 +1,12 @@
 # TASK-004 Plan — Meal Add/Edit Form (Stage 7)
 
 ## Objective
+
 Implement the full meal add/edit form (GamePlan stage 7) with a quick-entry bottom sheet
 and a full expanded form. All layout and keyboard interactions must keep buttons visible.
 
 ## Acceptance Criteria
+
 - [ ] FAB opens quick entry bottom sheet (50% height)
 - [ ] Quick entry: multiline meal text input + Expand + Save buttons
 - [ ] Expand button transitions to full form (92% height)
@@ -20,19 +22,20 @@ and a full expanded form. All layout and keyboard interactions must keep buttons
 - [ ] All colors from theme tokens
 
 ## Packages Installed
+
 - `@react-native-community/datetimepicker` (added by this task)
 
 ## Files to Create / Modify
 
-| Action | File | Reason |
-|--------|------|--------|
-| Modify | `utils/index.ts` | Add `getMealTypeForCurrentTime`, `getLocalDateString`, `getLocalTimeString` |
-| Modify | `i18n/en.json` | Add `mealForm.*` namespace |
-| Modify | `i18n/pl.json` | Add `mealForm.*` namespace |
-| Create | `components/MealFormSheet.tsx` | Full add/edit bottom sheet form |
-| Modify | `components/DayView.tsx` | Add `onMealPress?: (meal: Meal) => void` prop |
-| Modify | `components/index.ts` | Export `MealFormSheet` |
-| Modify | `app/screens/TodayScreen.tsx` | Replace inline sheet with `MealFormSheet`, wire edit handler |
+| Action | File                           | Reason                                                                      |
+| ------ | ------------------------------ | --------------------------------------------------------------------------- |
+| Modify | `utils/index.ts`               | Add `getMealTypeForCurrentTime`, `getLocalDateString`, `getLocalTimeString` |
+| Modify | `i18n/en.json`                 | Add `mealForm.*` namespace                                                  |
+| Modify | `i18n/pl.json`                 | Add `mealForm.*` namespace                                                  |
+| Create | `components/MealFormSheet.tsx` | Full add/edit bottom sheet form                                             |
+| Modify | `components/DayView.tsx`       | Add `onMealPress?: (meal: Meal) => void` prop                               |
+| Modify | `components/index.ts`          | Export `MealFormSheet`                                                      |
+| Modify | `app/screens/TodayScreen.tsx`  | Replace inline sheet with `MealFormSheet`, wire edit handler                |
 
 ## Layout Architecture
 
@@ -59,4 +62,5 @@ BottomSheet (snapPoints=["50%", "92%"], keyboardBehavior="interactive")
 ```
 
 ## Phase
+
 Single phase — all files in one implementation pass.

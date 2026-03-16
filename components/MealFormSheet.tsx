@@ -13,11 +13,19 @@ import React, {
     useRef,
     useState,
 } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+    FlatList,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useTranslation } from "react-i18next";
 import { useDatabase } from "../db/DatabaseProvider";
+import { getFavoritesByType } from "../db/favorites";
 import { createMeal, updateMeal } from "../db/meals";
-import type { Meal, MealType } from "../db/schema";
+import type { Favorite, Meal, MealType } from "../db/schema";
 import { useTheme } from "../theme";
 import {
     getMealTypeForCurrentTime,
@@ -84,6 +92,8 @@ export const MealFormSheet = forwardRef<
     const [isSaving, setIsSaving] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
+    const [showFavoritesPicker, setShowFavoritesPicker] = useState(false);
+    const [favoritesList, setFavoritesList] = useState<Favorite[]>([]);
 
     // ── Reset helper ─────────────────────────────────────────────────────────
 
@@ -152,7 +162,26 @@ export const MealFormSheet = forwardRef<
         setValidationError(null);
         setShowDatePicker(false);
         setShowTimePicker(false);
+        setShowFavoritesPicker(false);
     }, []);
+
+    // ── Favorites picker ─────────────────────────────────────────────────────
+
+    const handleOpenFavoritesPicker = useCallback(() => {
+        const templates = getFavoritesByType(db, "template");
+        const starred = getFavoritesByType(db, "starred");
+        setFavoritesList([...templates, ...starred]);
+        setShowFavoritesPicker(true);
+    }, [db]);
+
+    const handlePickFavorite = useCallback((fav: Favorite) => {
+        setMealText(fav.mealText);
+        if (fav.calories !== null && fav.calories !== undefined) {
+            setCalories(fav.calories.toString());
+        }
+        if (validationError) setValidationError(null);
+        setShowFavoritesPicker(false);
+    }, [validationError]);
 
     // ── Save ─────────────────────────────────────────────────────────────────
 
@@ -218,30 +247,24 @@ export const MealFormSheet = forwardRef<
 
     // ── Date/time picker handlers ────────────────────────────────────────────
 
-    const handleDateChange = useCallback(
-        (_: unknown, date?: Date) => {
-            setShowDatePicker(false);
-            if (date) {
-                const y = date.getFullYear();
-                const m = String(date.getMonth() + 1).padStart(2, "0");
-                const d = String(date.getDate()).padStart(2, "0");
-                setSelectedDate(`${y}-${m}-${d}`);
-            }
-        },
-        [],
-    );
+    const handleDateChange = useCallback((_: unknown, date?: Date) => {
+        setShowDatePicker(false);
+        if (date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
+            setSelectedDate(`${y}-${m}-${d}`);
+        }
+    }, []);
 
-    const handleTimeChange = useCallback(
-        (_: unknown, time?: Date) => {
-            setShowTimePicker(false);
-            if (time) {
-                const h = String(time.getHours()).padStart(2, "0");
-                const m = String(time.getMinutes()).padStart(2, "0");
-                setSelectedTime(`${h}:${m}`);
-            }
-        },
-        [],
-    );
+    const handleTimeChange = useCallback((_: unknown, time?: Date) => {
+        setShowTimePicker(false);
+        if (time) {
+            const h = String(time.getHours()).padStart(2, "0");
+            const m = String(time.getMinutes()).padStart(2, "0");
+            setSelectedTime(`${h}:${m}`);
+        }
+    }, []);
 
     const datePickerValue = useMemo(() => {
         const parts = selectedDate.split("-");
@@ -446,7 +469,10 @@ export const MealFormSheet = forwardRef<
                             <View
                                 style={[
                                     styles.dateTimeRow,
-                                    { gap: spacing.md, marginBottom: spacing.md },
+                                    {
+                                        gap: spacing.md,
+                                        marginBottom: spacing.md,
+                                    },
                                 ]}
                             >
                                 {/* Date */}
@@ -456,9 +482,7 @@ export const MealFormSheet = forwardRef<
                                     </Text>
                                     <TouchableOpacity
                                         style={fieldRowButton}
-                                        onPress={() =>
-                                            setShowDatePicker(true)
-                                        }
+                                        onPress={() => setShowDatePicker(true)}
                                         testID="meal-form-date-btn"
                                         accessibilityLabel={t(
                                             "mealForm.field_date",
@@ -490,9 +514,7 @@ export const MealFormSheet = forwardRef<
                                     </Text>
                                     <TouchableOpacity
                                         style={fieldRowButton}
-                                        onPress={() =>
-                                            setShowTimePicker(true)
-                                        }
+                                        onPress={() => setShowTimePicker(true)}
                                         testID="meal-form-time-btn"
                                         accessibilityLabel={t(
                                             "mealForm.field_time",
@@ -518,9 +540,47 @@ export const MealFormSheet = forwardRef<
                             </View>
 
                             {/* Meal text */}
-                            <Text style={sectionLabel}>
-                                {t("mealForm.field_meal_text")}
-                            </Text>
+                            <View
+                                style={[
+                                    styles.fieldLabelRow,
+                                    { marginBottom: spacing.xs },
+                                ]}
+                            >
+                                <Text style={[sectionLabel, { marginBottom: 0 }]}>
+                                    {t("mealForm.field_meal_text")}
+                                </Text>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.favoritesBtn,
+                                        {
+                                            backgroundColor: colors.surface,
+                                            borderColor: colors.border,
+                                            borderRadius: borderRadius.md,
+                                            paddingVertical: 4,
+                                            paddingHorizontal: spacing.sm,
+                                            gap: 4,
+                                        },
+                                    ]}
+                                    onPress={handleOpenFavoritesPicker}
+                                    activeOpacity={0.8}
+                                    testID="meal-form-full-favorites-btn"
+                                    accessibilityLabel={t("mealForm.btn_from_favorites")}
+                                >
+                                    <Ionicons
+                                        name="star-outline"
+                                        size={13}
+                                        color={colors.star}
+                                    />
+                                    <Text
+                                        style={{
+                                            color: colors.textSecondary,
+                                            fontSize: typography.fontSize.xs,
+                                        }}
+                                    >
+                                        {t("mealForm.btn_from_favorites")}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
                             <BottomSheetTextInput
                                 multiline
                                 onChangeText={(v) => {
@@ -535,8 +595,7 @@ export const MealFormSheet = forwardRef<
                                 style={[
                                     styles.textInput,
                                     {
-                                        backgroundColor:
-                                            colors.inputBackground,
+                                        backgroundColor: colors.inputBackground,
                                         borderColor: validationError
                                             ? colors.error
                                             : colors.inputBorder,
@@ -573,15 +632,12 @@ export const MealFormSheet = forwardRef<
                             <BottomSheetTextInput
                                 keyboardType="number-pad"
                                 onChangeText={setCalories}
-                                placeholder={t(
-                                    "mealForm.placeholder_calories",
-                                )}
+                                placeholder={t("mealForm.placeholder_calories")}
                                 placeholderTextColor={colors.inputPlaceholder}
                                 style={[
                                     styles.singleLineInput,
                                     {
-                                        backgroundColor:
-                                            colors.inputBackground,
+                                        backgroundColor: colors.inputBackground,
                                         borderColor: colors.inputBorder,
                                         borderRadius: borderRadius.md,
                                         color: colors.textPrimary,
@@ -606,8 +662,7 @@ export const MealFormSheet = forwardRef<
                                 style={[
                                     styles.textInput,
                                     {
-                                        backgroundColor:
-                                            colors.inputBackground,
+                                        backgroundColor: colors.inputBackground,
                                         borderColor: colors.inputBorder,
                                         borderRadius: borderRadius.md,
                                         color: colors.textPrimary,
@@ -696,10 +751,7 @@ export const MealFormSheet = forwardRef<
                 ) : (
                     // ── QUICK ENTRY ───────────────────────────────────────────
                     <BottomSheetView
-                        style={[
-                            styles.quickContainer,
-                            { padding: spacing.lg },
-                        ]}
+                        style={[styles.quickContainer, { padding: spacing.lg }]}
                     >
                         {/* Header */}
                         <View
@@ -780,6 +832,40 @@ export const MealFormSheet = forwardRef<
                             <View style={{ height: spacing.sm }} />
                         )}
 
+                        {/* Favorites shortcut */}
+                        <TouchableOpacity
+                            style={[
+                                styles.favoritesBtn,
+                                {
+                                    backgroundColor: colors.surface,
+                                    borderColor: colors.border,
+                                    borderRadius: borderRadius.md,
+                                    paddingVertical: spacing.sm,
+                                    paddingHorizontal: spacing.md,
+                                    marginBottom: spacing.sm,
+                                    gap: spacing.sm,
+                                },
+                            ]}
+                            onPress={handleOpenFavoritesPicker}
+                            activeOpacity={0.8}
+                            testID="meal-form-quick-favorites-btn"
+                            accessibilityLabel={t("mealForm.btn_from_favorites")}
+                        >
+                            <Ionicons
+                                name="star-outline"
+                                size={15}
+                                color={colors.star}
+                            />
+                            <Text
+                                style={{
+                                    color: colors.textSecondary,
+                                    fontSize: typography.fontSize.sm,
+                                }}
+                            >
+                                {t("mealForm.btn_from_favorites")}
+                            </Text>
+                        </TouchableOpacity>
+
                         {/* Action row */}
                         <View style={[styles.actionRow, { gap: spacing.sm }]}>
                             <TouchableOpacity
@@ -849,7 +935,160 @@ export const MealFormSheet = forwardRef<
                 )}
             </BottomSheet>
 
-            {/* Native date picker — rendered outside BottomSheet to avoid layout conflicts */}
+            {/* Favorites picker modal */}
+            <Modal
+                visible={showFavoritesPicker}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setShowFavoritesPicker(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalBackdrop}
+                    activeOpacity={1}
+                    onPress={() => setShowFavoritesPicker(false)}
+                />
+                <View
+                    style={[
+                        styles.modalSheet,
+                        {
+                            backgroundColor: colors.surfaceElevated,
+                            borderTopLeftRadius: borderRadius.lg,
+                            borderTopRightRadius: borderRadius.lg,
+                        },
+                    ]}
+                >
+                    {/* Modal header */}
+                    <View
+                        style={[
+                            styles.modalHeader,
+                            {
+                                paddingHorizontal: spacing.lg,
+                                paddingVertical: spacing.md,
+                                borderBottomColor: colors.divider,
+                            },
+                        ]}
+                    >
+                        <Text
+                            style={{
+                                color: colors.textPrimary,
+                                fontSize: typography.fontSize.lg,
+                                fontWeight: typography.fontWeight.bold,
+                                flex: 1,
+                            }}
+                        >
+                            {t("mealForm.favorites_picker_title")}
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => setShowFavoritesPicker(false)}
+                            style={styles.iconBtn}
+                            testID="favorites-picker-close-btn"
+                        >
+                            <Ionicons
+                                name="close"
+                                size={22}
+                                color={colors.textMuted}
+                            />
+                        </TouchableOpacity>
+                    </View>
+
+                    {favoritesList.length === 0 ? (
+                        <View style={styles.modalEmpty}>
+                            <Text
+                                style={{
+                                    color: colors.textSecondary,
+                                    fontSize: typography.fontSize.md,
+                                    textAlign: "center",
+                                }}
+                            >
+                                {t("mealForm.favorites_picker_empty")}
+                            </Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            data={favoritesList}
+                            keyExtractor={(item) => item.id.toString()}
+                            contentContainerStyle={{
+                                paddingVertical: spacing.sm,
+                            }}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={[
+                                        styles.favoriteRow,
+                                        {
+                                            paddingHorizontal: spacing.lg,
+                                            paddingVertical: spacing.md,
+                                            borderBottomColor: colors.divider,
+                                        },
+                                    ]}
+                                    onPress={() => handlePickFavorite(item)}
+                                    activeOpacity={0.7}
+                                    testID={`favorites-picker-item-${item.id}`}
+                                >
+                                    <View style={styles.favoriteRowLeft}>
+                                        <Ionicons
+                                            name={
+                                                item.type === "template"
+                                                    ? "bookmark-outline"
+                                                    : "star-outline"
+                                            }
+                                            size={16}
+                                            color={
+                                                item.type === "template"
+                                                    ? colors.primary
+                                                    : colors.star
+                                            }
+                                            style={{ marginTop: 2 }}
+                                        />
+                                        <View style={{ flex: 1 }}>
+                                            <Text
+                                                style={{
+                                                    color: colors.textPrimary,
+                                                    fontSize:
+                                                        typography.fontSize.md,
+                                                    fontWeight:
+                                                        typography.fontWeight
+                                                            .semiBold,
+                                                }}
+                                                numberOfLines={1}
+                                            >
+                                                {item.name}
+                                            </Text>
+                                            <Text
+                                                style={{
+                                                    color: colors.textSecondary,
+                                                    fontSize:
+                                                        typography.fontSize.sm,
+                                                    marginTop: 2,
+                                                }}
+                                                numberOfLines={2}
+                                            >
+                                                {item.mealText}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    {item.calories !== null &&
+                                    item.calories !== undefined ? (
+                                        <Text
+                                            style={{
+                                                color: colors.secondary,
+                                                fontSize:
+                                                    typography.fontSize.sm,
+                                                fontWeight:
+                                                    typography.fontWeight.bold,
+                                                marginLeft: spacing.sm,
+                                            }}
+                                        >
+                                            {item.calories} kcal
+                                        </Text>
+                                    ) : null}
+                                </TouchableOpacity>
+                            )}
+                        />
+                    )}
+                </View>
+            </Modal>
+
+            {/* Native date picker */}
             {showDatePicker && (
                 <DateTimePicker
                     value={datePickerValue}
@@ -950,5 +1189,42 @@ const styles = StyleSheet.create({
     quickSaveBtn: {
         flex: 2,
         alignItems: "center",
+    },
+    fieldLabelRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+    favoritesBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+    },
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.5)",
+    },
+    modalSheet: {
+        maxHeight: "60%",
+    },
+    modalHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    modalEmpty: {
+        padding: 32,
+        alignItems: "center",
+    },
+    favoriteRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    favoriteRowLeft: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 10,
     },
 });

@@ -3,9 +3,9 @@
 **Status:** APPROVED (after fixes applied)
 
 **Fixes applied post-initial review:**
+
 - Quick-entry title now uses `mode === "add" ? t("mealForm.title_quick") : t("mealForm.title_edit")`
 - Quick-entry header `View` override now includes `borderBottomColor: colors.divider`
-
 
 ---
 

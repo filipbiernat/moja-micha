@@ -189,7 +189,7 @@ moja-micha/
 - [x] Zapis nowego posiłku
 - [x] Edycja istniejącego posiłku
 - [x] Możliwość logowania posiłku wstecz (zmiana daty)
-- [ ] Wybór z ulubionych w formularzu
+- [x] Wybór z ulubionych w formularzu
 
 ### 8. Ekran: Historia
 
