@@ -47,12 +47,21 @@ Problem: A second `BottomSheet` rendered as a sibling with `index={-1}` never op
 Solution: Use `BottomSheetModal` (from `@gorhom/bottom-sheet`) instead. It renders via a Portal above all views. Requires adding `BottomSheetModalProvider` in `App.tsx` inside `GestureHandlerRootView`. Open via `ref.current?.present()`, close via `ref.current?.dismiss()`. Cleanup on close via the `onDismiss` prop.
 Discovered By: autonomous-orchestrator
 
-### 2026-03-16 — React Native Modal conflicts with @gorhom/bottom-sheet on Android
+### 2026-03-16 — React Native Modal conflicts with @gorhom/bottom-sheet on Android [SUPERSEDED]
 
 Task: TASK-005
 Context: Favorites picker overlay inside MealFormSheet
 Problem: Using `React Native Modal` (transparent + animationType="slide") as a picker overlay while a BottomSheet is open causes gesture conflicts on Android — two overlapping native gesture responders, potential flicker, and section header i18n keys remained dead.
 Solution: Use a second `BottomSheet` instance rendered as a sibling (inside the same `<>` fragment), controlled by state index. Use `BottomSheetSectionList` for grouped content and `BottomSheetBackdrop` for the backdrop. No `BottomSheetModalProvider` or App.tsx changes needed.
+Discovered By: autonomous-orchestrator
+NOTE: This entry was based on untested assumptions. See the 2026-03-17 entry below for the verified truth.
+
+### 2026-03-17 — React Native Modal is the correct picker overlay; BottomSheetModal silently fails
+
+Task: TASK-005 (definitive fix)
+Context: Favorites picker overlay inside MealFormSheet — verified on physical Android device
+Problem: BottomSheetModal.present() (v5) does nothing silently if any `BottomSheetModalInternalContext` hook fails. A second sibling BottomSheet with `index={-1}` also never opens because `handleSnapToIndex` guards on `isLayoutCalculated`, which is never set for a permanently-closed sheet. The previous attempt to use either of these resulted in a picker that silently never appeared.
+Solution: Use React Native `Modal` (transparent, animationType="slide", statusBarTranslucent) as a picker overlay with a state boolean `showFavoritesPicker`. This approach was already proven working in TASK-004 and continues to work correctly alongside @gorhom/bottom-sheet. Use `SectionList` (not `BottomSheetSectionList`) inside the Modal for grouped content. Keep two sibling absolute-positioned elements inside the Modal: a backdrop `TouchableOpacity` (full-screen, dismisses on tap) and a sheet `View` (position: absolute, bottom: 0, maxHeight: 60%).
 Discovered By: autonomous-orchestrator
 
 Task: TASK-003

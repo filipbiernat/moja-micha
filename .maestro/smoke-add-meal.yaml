@@ -1,0 +1,19 @@
+# Smoke test: add a meal from the Today screen
+appId: com.anonymous.mojamicha
+---
+- launchApp
+- tapOn:
+    id: "today-quick-entry-fab"
+- assertVisible:
+    id: "meal-form-quick-favorites-btn"
+- tapOn:
+    id: "meal-form-quick-favorites-btn"
+- assertVisible:
+    text: "Wybierz ulubiony"
+- tapOn:
+    id: "favorites-picker-close-btn"
+- inputText:
+    id: "meal-form-meal-text-input"
+    text: "Test posiłek Maestro"
+- tapOn:
+    id: "meal-form-save-btn"

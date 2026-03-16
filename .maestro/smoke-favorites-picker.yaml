@@ -1,0 +1,17 @@
+# Smoke test: favorites picker opens and fills form fields
+# Precondition: at least one favorite exists in the database
+appId: com.anonymous.mojamicha
+---
+- launchApp
+- tapOn:
+    id: "today-quick-entry-fab"
+- assertVisible:
+    id: "meal-form-quick-favorites-btn"
+- tapOn:
+    id: "meal-form-quick-favorites-btn"
+- assertVisible:
+    text: "Wybierz ulubiony"
+- tapOn:
+    id: "favorites-picker-close-btn"
+- assertNotVisible:
+    text: "Wybierz ulubiony"
