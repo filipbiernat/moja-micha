@@ -20,9 +20,15 @@ export interface DayViewProps {
     date: string; // YYYY-MM-DD
     onDateChange?: (newDate: string) => void;
     reloadKey?: number;
+    onMealPress?: (meal: Meal) => void;
 }
 
-export function DayView({ date, onDateChange, reloadKey = 0 }: DayViewProps) {
+export function DayView({
+    date,
+    onDateChange,
+    reloadKey = 0,
+    onMealPress,
+}: DayViewProps) {
     const { t } = useTranslation();
     const db = useDatabase();
     const { colors, typography, spacing, borderRadius } = useTheme();
@@ -121,7 +127,11 @@ export function DayView({ date, onDateChange, reloadKey = 0 }: DayViewProps) {
     };
 
     const renderMeal = ({ item }: { item: Meal }) => (
-        <View
+        <TouchableOpacity
+            onPress={onMealPress ? () => onMealPress(item) : undefined}
+            activeOpacity={onMealPress ? 0.7 : 1}
+            testID={`meal-card-${item.id}`}
+            accessibilityLabel={item.mealText}
             style={[
                 styles.mealCard,
                 {
@@ -184,7 +194,7 @@ export function DayView({ date, onDateChange, reloadKey = 0 }: DayViewProps) {
                     {item.aiAnalysis}
                 </Text>
             ) : null}
-        </View>
+        </TouchableOpacity>
     );
 
     const renderEmpty = () => (
@@ -508,4 +518,3 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
 });
-

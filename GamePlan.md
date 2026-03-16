@@ -175,20 +175,20 @@ moja-micha/
 
 ### 7. Formularz dodawania / edycji posiłku
 
-- [ ] **Bottom sheet** (podstawowy widok – szybki wpis):
+- [x] **Bottom sheet** (podstawowy widok – szybki wpis):
     - Pole „Posiłek" (multiline, obsługuje GBoard + dyktowanie)
     - Obsługa klawiatury (KeyboardAvoidingView – content się przesuwa, nie zasłania)
     - Opcja rozwinięcia do pełnego formularza
-- [ ] **Pełny formularz** (rozwinięty):
+- [x] **Pełny formularz** (rozwinięty):
     - Nazwa posiłku (picker z listą + auto-wybór wg pory dnia)
     - Godzina (time picker, domyślnie aktualna)
     - Pole „Posiłek"
     - Kalorie (opcjonalne, numeryczne)
     - Analiza AI / notatki (opcjonalne, multiline)
-- [ ] Walidacja: pole „Posiłek" wymagane
-- [ ] Zapis nowego posiłku
-- [ ] Edycja istniejącego posiłku
-- [ ] Możliwość logowania posiłku wstecz (zmiana daty)
+- [x] Walidacja: pole „Posiłek" wymagane
+- [x] Zapis nowego posiłku
+- [x] Edycja istniejącego posiłku
+- [x] Możliwość logowania posiłku wstecz (zmiana daty)
 - [ ] Wybór z ulubionych w formularzu
 
 ### 8. Ekran: Historia

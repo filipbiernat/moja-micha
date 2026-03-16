@@ -43,13 +43,27 @@
     "streak_plural": "{{count}} days streak"
   },
   "today": {
-    "quick_entry_title": "Quick meal",
-    "quick_entry_placeholder": "What did you eat?",
-    "quick_entry_open": "Open quick meal entry",
-    "quick_entry_cancel": "Cancel",
-    "quick_entry_save": "Save meal",
-    "quick_entry_saving": "Saving...",
-    "quick_entry_validation_required": "Meal description is required.",
-    "quick_entry_save_error": "Meal could not be saved."
+    "quick_entry_open": "Open quick meal entry"
+  },
+  "mealForm": {
+    "title_quick": "Quick entry",
+    "title_add": "Add meal",
+    "title_edit": "Edit meal",
+    "field_meal_type": "Meal type",
+    "field_date": "Date",
+    "field_time": "Time",
+    "field_meal_text": "Meal",
+    "field_calories": "Calories (optional)",
+    "field_notes": "Notes (optional)",
+    "placeholder_meal_text": "What did you eat?",
+    "placeholder_calories": "e.g. 450",
+    "placeholder_notes": "Personal notes or observations…",
+    "btn_expand": "More options",
+    "btn_collapse": "Collapse",
+    "btn_save": "Save meal",
+    "btn_saving": "Saving…",
+    "btn_cancel": "Cancel",
+    "validation_required": "Meal description is required.",
+    "save_error": "Could not save the meal."
   }
 }

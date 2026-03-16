@@ -43,13 +43,27 @@
     "streak_plural": "{{count}} dni z rzędu"
   },
   "today": {
-    "quick_entry_title": "Szybki wpis",
-    "quick_entry_placeholder": "Co zjadłeś?",
-    "quick_entry_open": "Otwórz szybki wpis posiłku",
-    "quick_entry_cancel": "Anuluj",
-    "quick_entry_save": "Zapisz posiłek",
-    "quick_entry_saving": "Zapisywanie...",
-    "quick_entry_validation_required": "Opis posiłku jest wymagany.",
-    "quick_entry_save_error": "Nie udało się zapisać posiłku."
+    "quick_entry_open": "Otwórz szybki wpis posiłku"
+  },
+  "mealForm": {
+    "title_quick": "Szybki wpis",
+    "title_add": "Dodaj posiłek",
+    "title_edit": "Edytuj posiłek",
+    "field_meal_type": "Rodzaj posiłku",
+    "field_date": "Data",
+    "field_time": "Godzina",
+    "field_meal_text": "Posiłek",
+    "field_calories": "Kalorie (opcjonalnie)",
+    "field_notes": "Notatki (opcjonalnie)",
+    "placeholder_meal_text": "Co zjadłeś?",
+    "placeholder_calories": "np. 450",
+    "placeholder_notes": "Własne notatki lub obserwacje…",
+    "btn_expand": "Więcej opcji",
+    "btn_collapse": "Zwiń",
+    "btn_save": "Zapisz posiłek",
+    "btn_saving": "Zapisywanie…",
+    "btn_cancel": "Anuluj",
+    "validation_required": "Opis posiłku jest wymagany.",
+    "save_error": "Nie udało się zapisać posiłku."
   }
 }
