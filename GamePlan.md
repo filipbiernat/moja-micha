@@ -193,11 +193,11 @@ moja-micha/
 
 ### 8. Ekran: Historia
 
-- [ ] Widok kalendarza (`react-native-calendars`)
-- [ ] Oznaczenie dni z wpisami na kalendarzu (kropka/kolor)
-- [ ] Po wybraniu daty: widok dnia z paskiem mini-kalendarza na górze
-- [ ] Swipe między dniami w widoku historii
-- [ ] Edycja posiłków z poprzednich dni
+- [x] Widok kalendarza (`react-native-calendars`)
+- [x] Oznaczenie dni z wpisami na kalendarzu (kropka/kolor)
+- [x] Po wybraniu daty: widok dnia z paskiem mini-kalendarza na górze
+- [x] Swipe między dniami w widoku historii
+- [x] Edycja posiłków z poprzednich dni
 
 ### 9. Ekran: Ulubione
 

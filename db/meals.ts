@@ -183,6 +183,23 @@ export function getStreak(db: DB): number {
 }
 
 /**
+ * Get all unique dates in the given range that have at least one meal.
+ */
+export function getDatesWithMeals(
+    db: DB,
+    startDate: string,
+    endDate: string
+): string[] {
+    const rows = db
+        .selectDistinct({ date: meals.date })
+        .from(meals)
+        .where(and(gte(meals.date, startDate), lte(meals.date, endDate)))
+        .orderBy(meals.date)
+        .all();
+    return rows.map((r) => r.date);
+}
+
+/**
  * Get calorie summary for a date range.
  */
 export function getCalorieSummary(
