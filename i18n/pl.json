@@ -1,5 +1,6 @@
 {
   "tabs": {
+    "journal": "Dziennik",
     "today": "Dziś",
     "history": "Historia",
     "favorites": "Ulubione",
@@ -33,6 +34,7 @@
     "snack": "Przekąska"
   },
   "dayView": {
+    "toggle_calendar": "Przełącz widok kalendarza",
     "empty_state_title": "Brak posiłków",
     "empty_state_subtitle": "Dodaj swój pierwszy posiłek w tym dniu!",
     "sort_newest": "Od najnowszego",

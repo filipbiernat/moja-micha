@@ -21,6 +21,10 @@ export interface DayViewProps {
     onDateChange?: (newDate: string) => void;
     reloadKey?: number;
     onMealPress?: (meal: Meal) => void;
+    /** If provided, the date row becomes tappable and shows a chevron toggle. */
+    onCalendarToggle?: () => void;
+    /** Controls the chevron direction when the calendar is open/closed. */
+    calendarExpanded?: boolean;
 }
 
 export function DayView({
@@ -28,6 +32,8 @@ export function DayView({
     onDateChange,
     reloadKey = 0,
     onMealPress,
+    onCalendarToggle,
+    calendarExpanded = false,
 }: DayViewProps) {
     const { t } = useTranslation();
     const db = useDatabase();
@@ -258,42 +264,95 @@ export function DayView({
                     <View style={styles.navButtonPlaceholder} />
                 )}
 
-                <View style={styles.dateContainer}>
-                    <Text
-                        style={[
-                            styles.dateText,
-                            {
-                                color: colors.textPrimary,
-                                fontSize: typography.fontSize.xxl,
-                                fontWeight: typography.fontWeight.bold,
-                            },
-                        ]}
+                {onCalendarToggle ? (
+                    <TouchableOpacity
+                        onPress={onCalendarToggle}
+                        style={styles.dateContainer}
+                        activeOpacity={0.7}
+                        testID="dayview-calendar-toggle"
+                        accessibilityLabel={t('dayView.toggle_calendar')}
                     >
-                        {formatDateEuropean(date)}
-                    </Text>
-                    {streak > 0 && (
-                        <View
+                        <View style={styles.dateRow}>
+                            <Text
+                                style={[
+                                    styles.dateText,
+                                    {
+                                        color: colors.textPrimary,
+                                        fontSize: typography.fontSize.xxl,
+                                        fontWeight: typography.fontWeight.bold,
+                                    },
+                                ]}
+                            >
+                                {formatDateEuropean(date)}
+                            </Text>
+                            <Ionicons
+                                name={calendarExpanded ? 'chevron-up' : 'chevron-down'}
+                                size={16}
+                                color={colors.primary}
+                                style={{ marginLeft: spacing.xs }}
+                            />
+                        </View>
+                        {streak > 0 && (
+                            <View
+                                style={[
+                                    styles.streakBadge,
+                                    {
+                                        backgroundColor: colors.surfaceHighlight,
+                                        borderRadius: borderRadius.full,
+                                        marginTop: spacing.xs,
+                                    },
+                                ]}
+                            >
+                                <Text
+                                    style={{
+                                        color: colors.streak,
+                                        fontSize: typography.fontSize.xs,
+                                        fontWeight: typography.fontWeight.bold,
+                                    }}
+                                >
+                                    🔥 {streakText}
+                                </Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                ) : (
+                    <View style={styles.dateContainer}>
+                        <Text
                             style={[
-                                styles.streakBadge,
+                                styles.dateText,
                                 {
-                                    backgroundColor: colors.surfaceHighlight,
-                                    borderRadius: borderRadius.full,
-                                    marginTop: spacing.xs,
+                                    color: colors.textPrimary,
+                                    fontSize: typography.fontSize.xxl,
+                                    fontWeight: typography.fontWeight.bold,
                                 },
                             ]}
                         >
-                            <Text
-                                style={{
-                                    color: colors.streak,
-                                    fontSize: typography.fontSize.xs,
-                                    fontWeight: typography.fontWeight.bold,
-                                }}
+                            {formatDateEuropean(date)}
+                        </Text>
+                        {streak > 0 && (
+                            <View
+                                style={[
+                                    styles.streakBadge,
+                                    {
+                                        backgroundColor: colors.surfaceHighlight,
+                                        borderRadius: borderRadius.full,
+                                        marginTop: spacing.xs,
+                                    },
+                                ]}
                             >
-                                🔥 {streakText}
-                            </Text>
-                        </View>
-                    )}
-                </View>
+                                <Text
+                                    style={{
+                                        color: colors.streak,
+                                        fontSize: typography.fontSize.xs,
+                                        fontWeight: typography.fontWeight.bold,
+                                    }}
+                                >
+                                    🔥 {streakText}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                )}
 
                 {onDateChange ? (
                     <TouchableOpacity
@@ -455,6 +514,10 @@ const styles = StyleSheet.create({
         width: 40,
     },
     dateContainer: {
+        alignItems: "center",
+    },
+    dateRow: {
+        flexDirection: "row",
         alignItems: "center",
     },
     dateText: {

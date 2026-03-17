@@ -148,9 +148,8 @@ moja-micha/
 
 ### 4. Nawigacja
 
-- [x] Pasek zakładek (bottom tab bar) z 5 zakładkami:
-    - 🍽️ Dziś
-    - 📅 Historia
+- [x] Pasek zakładek (bottom tab bar) z 4 zakładkami:
+    - 📔 Dziennik (zastąpił "Dziś" + "Historia")
     - ⭐ Ulubione
     - 📊 Statystyki
     - ⚙️ Ustawienia
@@ -166,12 +165,17 @@ moja-micha/
 - [x] Swipe w lewo/prawo między dniami
 - [x] Obsługa pustego stanu (brak posiłków)
 
-### 6. Ekran: Dziś
+### 6. Ekran: Dziennik (połączenie Dziś + Historia)
 
 - [x] Komponent widoku dnia z datą = dzisiaj
 - [x] Nagłówek z datą i streakiem
 - [x] Przycisk FAB (+) – szybki wpis (bottom sheet)
 - [x] Swipe między dniami
+- [x] Zwijany kalendarz (domyślnie zwinięty): tap na datę lub chevron otwiera/zamyka
+- [x] Oznaczenie dni z wpisami na kalendarzu (kropka/kolor)
+- [x] Wybieranie daty z kalendarza → DayView przechodzi na wybrany dzień
+- [x] Nawigacja do odległychmiesięcy/lat (tap na tytuł miesiąca → siatka lat → miesiące)
+- [x] Edycja posiłków z poprzednich dni
 
 ### 7. Formularz dodawania / edycji posiłku
 
@@ -191,13 +195,9 @@ moja-micha/
 - [x] Możliwość logowania posiłku wstecz (zmiana daty)
 - [x] Wybór z ulubionych w formularzu
 
-### 8. Ekran: Historia
+### 8. Ekran: Historia → przeniesione do etapu 6 (Dziennik)
 
-- [x] Widok kalendarza (`react-native-calendars`)
-- [x] Oznaczenie dni z wpisami na kalendarzu (kropka/kolor)
-- [x] Po wybraniu daty: widok dnia z paskiem mini-kalendarza na górze
-- [x] Swipe między dniami w widoku historii
-- [x] Edycja posiłków z poprzednich dni
+- [x] Scalono z ekranem Dziś w jedną zakładkę Dziennik (patrz etap 6)
 
 ### 9. Ekran: Ulubione
 

@@ -11,8 +11,7 @@ import { LanguageProvider } from "./i18n/LanguageProvider";
 import { useTranslation } from "react-i18next";
 import "./i18n"; // Inicjalizacja i18next
 
-import TodayScreen from "./app/screens/TodayScreen";
-import HistoryScreen from "./app/screens/HistoryScreen";
+import JournalScreen from "./app/screens/JournalScreen";
 import FavoritesScreen from "./app/screens/FavoritesScreen";
 import StatsScreen from "./app/screens/StatsScreen";
 import SettingsScreen from "./app/screens/SettingsScreen";
@@ -57,22 +56,12 @@ function AppNavigator() {
                 }}
             >
                 <Tab.Screen
-                    name="Today"
-                    component={TodayScreen}
+                    name="Journal"
+                    component={JournalScreen}
                     options={{
-                        tabBarLabel: t("tabs.today"),
+                        tabBarLabel: t("tabs.journal"),
                         tabBarIcon: ({ size }: TabIconProps) => (
-                            <TabIcon emoji="🍽️" size={size} />
-                        ),
-                    }}
-                />
-                <Tab.Screen
-                    name="History"
-                    component={HistoryScreen}
-                    options={{
-                        tabBarLabel: t("tabs.history"),
-                        tabBarIcon: ({ size }: TabIconProps) => (
-                            <TabIcon emoji="📅" size={size} />
+                            <TabIcon emoji="📔" size={size} />
                         ),
                     }}
                 />

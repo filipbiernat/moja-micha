@@ -1,5 +1,6 @@
 {
   "tabs": {
+    "journal": "Journal",
     "today": "Today",
     "history": "History",
     "favorites": "Favorites",
@@ -33,6 +34,7 @@
     "snack": "Snack"
   },
   "dayView": {
+    "toggle_calendar": "Toggle calendar view",
     "empty_state_title": "No meals",
     "empty_state_subtitle": "Add your first meal on this day!",
     "sort_newest": "Newest first",
