@@ -151,11 +151,23 @@ Review fixes use the same task ID. After applying fixes, always re-run automated
     - test report path
     - final commit message
 4. Stage `docs/tasks/TASK-###-complete.md`.
-5. Synthesize a conventional commit message from the phase if one is not already prepared.
+5. Synthesize a descriptive conventional commit message:
+    - Subject line: `type(scope): concise imperative description` (max 72 chars)
+    - Body: multi-line bullet list of what was added/changed/removed
+    - Never include task IDs (`TASK-###`) in the commit message
+    - Never use placeholder or generic messages (e.g. "update files", "fix things")
+    - Examples of good bodies: list the key behaviours/files changed, not internal ticket numbers
 6. Run:
     ```bash
-    git add -A && git commit -m "type(scope): short description"
+    git add -A && git commit -m "type(scope): description
     ```
+
+- bullet describing what changed
+- bullet describing why or what effect it has"
+    ```
+
+    ```
+
 7. Never commit with a placeholder message.
 8. Proceed immediately to the next phase.
 
