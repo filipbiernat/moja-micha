@@ -3,19 +3,20 @@
 ## Status: DONE
 
 ## Commit
+
 `5b0405c` — feat(history): implement History screen with calendar and day view
 
 ## What Was Delivered
 
 All 5 GamePlan stage-8 items implemented and checked off:
 
-| Item | Done |
-|------|------|
-| Widok kalendarza (`react-native-calendars`) | ✓ |
-| Oznaczenie dni z wpisami na kalendarzu (kropka/kolor) | ✓ |
-| Po wybraniu daty: widok dnia z paskiem mini-kalendarza na górze | ✓ |
-| Swipe między dniami w widoku historii | ✓ |
-| Edycja posiłków z poprzednich dni | ✓ |
+| Item                                                            | Done |
+| --------------------------------------------------------------- | ---- |
+| Widok kalendarza (`react-native-calendars`)                     | ✓    |
+| Oznaczenie dni z wpisami na kalendarzu (kropka/kolor)           | ✓    |
+| Po wybraniu daty: widok dnia z paskiem mini-kalendarza na górze | ✓    |
+| Swipe między dniami w widoku historii                           | ✓    |
+| Edycja posiłków z poprzednich dni                               | ✓    |
 
 ## Files Changed
 

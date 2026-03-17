@@ -7,6 +7,7 @@ Implement the History screen with a full calendar view, marked days, and day-lev
 ## Scope
 
 GamePlan stage 8 — all 5 checklist items:
+
 - Calendar view (`react-native-calendars`)
 - Days with entries marked (dot/color)
 - After selecting a date: DayView shown with calendar above as context strip
@@ -26,12 +27,12 @@ GamePlan stage 8 — all 5 checklist items:
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `db/meals.ts` | Add `getDatesWithMeals(db, startDate, endDate): string[]` |
-| `db/index.ts` | Export `getDatesWithMeals` |
-| `app/screens/HistoryScreen.tsx` | Full implementation (replace placeholder) |
-| `GamePlan.md` | Check off all 5 stage-8 items |
+| File                            | Change                                                    |
+| ------------------------------- | --------------------------------------------------------- |
+| `db/meals.ts`                   | Add `getDatesWithMeals(db, startDate, endDate): string[]` |
+| `db/index.ts`                   | Export `getDatesWithMeals`                                |
+| `app/screens/HistoryScreen.tsx` | Full implementation (replace placeholder)                 |
+| `GamePlan.md`                   | Check off all 5 stage-8 items                             |
 
 ## Architecture Notes
 

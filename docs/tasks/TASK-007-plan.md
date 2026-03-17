@@ -31,24 +31,26 @@ and retains all functionality of both old screens.
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `components/DayView.tsx` | Add `onCalendarToggle` + `calendarExpanded` optional props |
-| `app/screens/JournalScreen.tsx` | New screen |
-| `App.tsx` | Replace Today+History with Journal |
-| `i18n/pl.json` | Add `tabs.journal`, `dayView.toggle_calendar` |
-| `i18n/en.json` | Same |
-| `app/screens/TodayScreen.tsx` | Deleted |
-| `app/screens/HistoryScreen.tsx` | Deleted |
-| `GamePlan.md` | Update task descriptions for stages 6 & 8 |
+| File                            | Change                                                     |
+| ------------------------------- | ---------------------------------------------------------- |
+| `components/DayView.tsx`        | Add `onCalendarToggle` + `calendarExpanded` optional props |
+| `app/screens/JournalScreen.tsx` | New screen                                                 |
+| `App.tsx`                       | Replace Today+History with Journal                         |
+| `i18n/pl.json`                  | Add `tabs.journal`, `dayView.toggle_calendar`              |
+| `i18n/en.json`                  | Same                                                       |
+| `app/screens/TodayScreen.tsx`   | Deleted                                                    |
+| `app/screens/HistoryScreen.tsx` | Deleted                                                    |
+| `GamePlan.md`                   | Update task descriptions for stages 6 & 8                  |
 
 ## Architecture
 
 ### DayView changes
+
 - `onCalendarToggle?: () => void` — if provided, date area becomes TouchableOpacity
 - `calendarExpanded?: boolean` — drives chevron direction indicator
 
 ### JournalScreen structure
+
 ```
 SafeAreaView
   Animated.View [calendarContainer, height-animated 0↔380]
@@ -66,9 +68,11 @@ SafeAreaView
 ```
 
 ### Calendar height
+
 Constant `CALENDAR_HEIGHT = 380`. `overflow: hidden` clips any overflow.
 
 ### Year picker
+
 `pickerYear ± YEAR_RANGE (6)` = 13 years in a 4-column grid.
 Tap year → show month grid for that year.
 Tap month → `setVisibleMonthKey` → picker closes.

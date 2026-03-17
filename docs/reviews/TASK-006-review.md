@@ -8,13 +8,13 @@
 
 ## Candidate Scope
 
-| File | Staged |
-|------|--------|
-| `app/screens/HistoryScreen.tsx` | ✅ |
-| `db/meals.ts` | ✅ |
-| `db/index.ts` | ✅ |
-| `GamePlan.md` | ✅ |
-| `docs/tasks/TASK-006-plan.md` | ✅ |
+| File                            | Staged |
+| ------------------------------- | ------ |
+| `app/screens/HistoryScreen.tsx` | ✅     |
+| `db/meals.ts`                   | ✅     |
+| `db/index.ts`                   | ✅     |
+| `GamePlan.md`                   | ✅     |
+| `docs/tasks/TASK-006-plan.md`   | ✅     |
 
 **Candidate Scope Match:** matched
 
@@ -73,16 +73,16 @@ This only manifests when editing a meal's date across a month boundary — an ed
 
 ## Acceptance Criteria Verification
 
-| # | Criterion | Result |
-|---|-----------|--------|
-| 1 | Themed `Calendar` at top | ✅ — `react-native-calendars` `Calendar` with full `calendarTheme` from `useTheme()` |
-| 2 | Dates with meals marked with a dot | ✅ — `getDatesWithMeals` + `marked: true, dotColor: colors.primary` |
-| 3 | Calendar date selection → DayView | ✅ — `handleDayPress` → `setSelectedDate` |
-| 4 | DayView swipe → Calendar month sync | ✅ — `handleDateChange` sets both `selectedDate` and `visibleMonthKey`; `key={visibleMonthKey}` forces calendar remount |
-| 5 | Meal card tap → MealFormSheet edit | ✅ — `handleMealPress` → `formSheetRef.current?.openEdit(meal)` |
-| 6 | Save → DayView refresh + marks reload | ✅ — `refreshKey` bump triggers `loadMarkedDates` via `useEffect` |
-| 7 | i18n / theme compliance | ✅ — no hardcoded user-visible strings; all colors from `colors.*` except one `'transparent'` noted above |
-| 8 | TypeScript strict, no errors | ✅ — `get_errors` returned no errors; no implicit `any` |
+| #   | Criterion                             | Result                                                                                                                  |
+| --- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 1   | Themed `Calendar` at top              | ✅ — `react-native-calendars` `Calendar` with full `calendarTheme` from `useTheme()`                                    |
+| 2   | Dates with meals marked with a dot    | ✅ — `getDatesWithMeals` + `marked: true, dotColor: colors.primary`                                                     |
+| 3   | Calendar date selection → DayView     | ✅ — `handleDayPress` → `setSelectedDate`                                                                               |
+| 4   | DayView swipe → Calendar month sync   | ✅ — `handleDateChange` sets both `selectedDate` and `visibleMonthKey`; `key={visibleMonthKey}` forces calendar remount |
+| 5   | Meal card tap → MealFormSheet edit    | ✅ — `handleMealPress` → `formSheetRef.current?.openEdit(meal)`                                                         |
+| 6   | Save → DayView refresh + marks reload | ✅ — `refreshKey` bump triggers `loadMarkedDates` via `useEffect`                                                       |
+| 7   | i18n / theme compliance               | ✅ — no hardcoded user-visible strings; all colors from `colors.*` except one `'transparent'` noted above               |
+| 8   | TypeScript strict, no errors          | ✅ — `get_errors` returned no errors; no implicit `any`                                                                 |
 
 ---
 

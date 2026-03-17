@@ -270,7 +270,7 @@ export function DayView({
                         style={styles.dateContainer}
                         activeOpacity={0.7}
                         testID="dayview-calendar-toggle"
-                        accessibilityLabel={t('dayView.toggle_calendar')}
+                        accessibilityLabel={t("dayView.toggle_calendar")}
                     >
                         <View style={styles.dateRow}>
                             <Text
@@ -286,7 +286,11 @@ export function DayView({
                                 {formatDateEuropean(date)}
                             </Text>
                             <Ionicons
-                                name={calendarExpanded ? 'chevron-up' : 'chevron-down'}
+                                name={
+                                    calendarExpanded
+                                        ? "chevron-up"
+                                        : "chevron-down"
+                                }
                                 size={16}
                                 color={colors.primary}
                                 style={{ marginLeft: spacing.xs }}
@@ -297,7 +301,8 @@ export function DayView({
                                 style={[
                                     styles.streakBadge,
                                     {
-                                        backgroundColor: colors.surfaceHighlight,
+                                        backgroundColor:
+                                            colors.surfaceHighlight,
                                         borderRadius: borderRadius.full,
                                         marginTop: spacing.xs,
                                     },
@@ -334,7 +339,8 @@ export function DayView({
                                 style={[
                                     styles.streakBadge,
                                     {
-                                        backgroundColor: colors.surfaceHighlight,
+                                        backgroundColor:
+                                            colors.surfaceHighlight,
                                         borderRadius: borderRadius.full,
                                         marginTop: spacing.xs,
                                     },

@@ -4,7 +4,7 @@ import React, {
     useMemo,
     useRef,
     useState,
-} from 'react';
+} from "react";
 import {
     Animated,
     Modal,
@@ -13,23 +13,23 @@ import {
     TouchableOpacity,
     TouchableWithoutFeedback,
     View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
-import { Calendar } from 'react-native-calendars';
-import type { DateData } from 'react-native-calendars';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useDatabase } from '../../db/DatabaseProvider';
-import { getDatesWithMeals } from '../../db/meals';
-import { DayView } from '../../components/DayView';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
+import { Calendar } from "react-native-calendars";
+import type { DateData } from "react-native-calendars";
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import { useDatabase } from "../../db/DatabaseProvider";
+import { getDatesWithMeals } from "../../db/meals";
+import { DayView } from "../../components/DayView";
 import {
     MealFormSheet,
     type MealFormSheetHandle,
-} from '../../components/MealFormSheet';
-import type { Meal } from '../../db/schema';
-import { useTheme } from '../../theme';
-import { getLocalDateString } from '../../utils';
+} from "../../components/MealFormSheet";
+import type { Meal } from "../../db/schema";
+import { useTheme } from "../../theme";
+import { getLocalDateString } from "../../utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -41,32 +41,32 @@ const YEAR_RANGE = 6;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type PickerMode = 'none' | 'year' | 'month';
+type PickerMode = "none" | "year" | "month";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function monthRangeForKey(monthKey: string): { start: string; end: string } {
-    const [year, month] = monthKey.split('-').map(Number);
-    const start = `${year}-${String(month).padStart(2, '0')}-01`;
+    const [year, month] = monthKey.split("-").map(Number);
+    const start = `${year}-${String(month).padStart(2, "0")}-01`;
     // '31' is a safe upper bound — SQLite string compare matches all real days
-    const end = `${year}-${String(month).padStart(2, '0')}-31`;
+    const end = `${year}-${String(month).padStart(2, "0")}-31`;
     return { start, end };
 }
 
 function formatMonthYear(yearMonthKey: string, language: string): string {
-    const [y, m] = yearMonthKey.split('-').map(Number);
+    const [y, m] = yearMonthKey.split("-").map(Number);
     const d = new Date(y, m - 1, 1);
     const monthName = d.toLocaleDateString(
-        language === 'pl' ? 'pl-PL' : 'en-US',
-        { month: 'long' },
+        language === "pl" ? "pl-PL" : "en-US",
+        { month: "long" },
     );
     return `${monthName} ${y}`;
 }
 
 function getMonthShort(monthIndex: number, language: string): string {
     const d = new Date(2024, monthIndex, 1);
-    return d.toLocaleDateString(language === 'pl' ? 'pl-PL' : 'en-US', {
-        month: 'short',
+    return d.toLocaleDateString(language === "pl" ? "pl-PL" : "en-US", {
+        month: "short",
     });
 }
 
@@ -76,7 +76,7 @@ export default function JournalScreen() {
     const { t, i18n } = useTranslation();
     const { colors, typography, spacing, borderRadius, shadows } = useTheme();
     const db = useDatabase();
-    const lang = i18n.language ?? 'en';
+    const lang = i18n.language ?? "en";
 
     // ─── Date & calendar navigation state ─────────────────────────────────────
 
@@ -134,30 +134,32 @@ export default function JournalScreen() {
 
     // ─── Year / month picker ───────────────────────────────────────────────────
 
-    const [pickerMode, setPickerMode] = useState<PickerMode>('none');
-    const [pickerYear, setPickerYear] = useState(() => new Date().getFullYear());
+    const [pickerMode, setPickerMode] = useState<PickerMode>("none");
+    const [pickerYear, setPickerYear] = useState(() =>
+        new Date().getFullYear(),
+    );
 
     const openYearPicker = useCallback(() => {
-        const [y] = visibleMonthKey.split('-').map(Number);
+        const [y] = visibleMonthKey.split("-").map(Number);
         setPickerYear(y);
-        setPickerMode('year');
+        setPickerMode("year");
     }, [visibleMonthKey]);
 
     const handleYearSelect = useCallback((year: number) => {
         setPickerYear(year);
-        setPickerMode('month');
+        setPickerMode("month");
     }, []);
 
     const handleMonthSelect = useCallback(
         (monthIndex: number /* 0-based */) => {
-            const newMonthKey = `${pickerYear}-${String(monthIndex + 1).padStart(2, '0')}-01`;
+            const newMonthKey = `${pickerYear}-${String(monthIndex + 1).padStart(2, "0")}-01`;
             setVisibleMonthKey(newMonthKey);
-            setPickerMode('none');
+            setPickerMode("none");
         },
         [pickerYear],
     );
 
-    const closePicker = useCallback(() => setPickerMode('none'), []);
+    const closePicker = useCallback(() => setPickerMode("none"), []);
 
     // ─── Meal form sheet ───────────────────────────────────────────────────────
 
@@ -173,7 +175,7 @@ export default function JournalScreen() {
 
     const handleSaved = useCallback((savedDate: string) => {
         setCurrentDate(savedDate);
-        setVisibleMonthKey(savedDate.substring(0, 7) + '-01');
+        setVisibleMonthKey(savedDate.substring(0, 7) + "-01");
         setRefreshKey((prev) => prev + 1);
     }, []);
 
@@ -183,7 +185,7 @@ export default function JournalScreen() {
         useCallback(() => {
             const today = getLocalDateString();
             setCurrentDate(today);
-            setVisibleMonthKey(today.substring(0, 7) + '-01');
+            setVisibleMonthKey(today.substring(0, 7) + "-01");
             closeCalendar();
         }, [closeCalendar]),
     );
@@ -194,13 +196,14 @@ export default function JournalScreen() {
         try {
             const { start, end } = monthRangeForKey(visibleMonthKey);
             const dates = getDatesWithMeals(db, start, end);
-            const marks: Record<string, { marked: boolean; dotColor: string }> = {};
+            const marks: Record<string, { marked: boolean; dotColor: string }> =
+                {};
             for (const d of dates) {
                 marks[d] = { marked: true, dotColor: colors.primary };
             }
             setMarkedDates(marks);
         } catch (err) {
-            console.error('JournalScreen: failed to load marked dates', err);
+            console.error("JournalScreen: failed to load marked dates", err);
         }
     }, [db, visibleMonthKey, colors.primary]);
 
@@ -219,14 +222,14 @@ export default function JournalScreen() {
     );
 
     const handleMonthChange = useCallback((month: DateData) => {
-        setVisibleMonthKey(month.dateString.substring(0, 7) + '-01');
+        setVisibleMonthKey(month.dateString.substring(0, 7) + "-01");
     }, []);
 
     // ─── DayView date change (swipe / arrows) ─────────────────────────────────
 
     const handleDateChange = useCallback((newDate: string) => {
         setCurrentDate(newDate);
-        setVisibleMonthKey(newDate.substring(0, 7) + '-01');
+        setVisibleMonthKey(newDate.substring(0, 7) + "-01");
     }, []);
 
     // ─── Memoised calendar props ──────────────────────────────────────────────
@@ -240,7 +243,7 @@ export default function JournalScreen() {
             selectedDayTextColor: colors.textOnAccent,
             todayTextColor: colors.secondary,
             // 'transparent' is intentional: today uses colored text, no fill
-            todayBackgroundColor: 'transparent' as const,
+            todayBackgroundColor: "transparent" as const,
             dayTextColor: colors.textPrimary,
             textDisabledColor: colors.textDisabled,
             dotColor: colors.primary,
@@ -342,7 +345,7 @@ export default function JournalScreen() {
                         fontWeight: isSelected
                             ? typography.fontWeight.bold
                             : typography.fontWeight.regular,
-                        textAlign: 'center',
+                        textAlign: "center",
                     }}
                 >
                     {year}
@@ -352,8 +355,10 @@ export default function JournalScreen() {
     };
 
     const renderPickerMonth = (item: { index: number; label: string }) => {
-        const [, visM] = visibleMonthKey.split('-').map(Number);
-        const isSelected = item.index + 1 === visM && pickerYear === new Date(visibleMonthKey).getFullYear();
+        const [, visM] = visibleMonthKey.split("-").map(Number);
+        const isSelected =
+            item.index + 1 === visM &&
+            pickerYear === new Date(visibleMonthKey).getFullYear();
         return (
             <TouchableOpacity
                 key={item.index}
@@ -375,7 +380,7 @@ export default function JournalScreen() {
                         fontWeight: isSelected
                             ? typography.fontWeight.bold
                             : typography.fontWeight.regular,
-                        textAlign: 'center',
+                        textAlign: "center",
                     }}
                 >
                     {item.label}
@@ -388,7 +393,7 @@ export default function JournalScreen() {
 
     return (
         <SafeAreaView
-            edges={['top']}
+            edges={["top"]}
             style={[styles.container, { backgroundColor: colors.background }]}
         >
             {/* ── Collapsible calendar ───────────────────────────────────── */}
@@ -440,7 +445,7 @@ export default function JournalScreen() {
 
             {/* ── FAB ───────────────────────────────────────────────────── */}
             <TouchableOpacity
-                accessibilityLabel={t('today.quick_entry_open')}
+                accessibilityLabel={t("today.quick_entry_open")}
                 activeOpacity={0.9}
                 onPress={handleOpenAdd}
                 testID="journal-quick-entry-fab"
@@ -463,7 +468,7 @@ export default function JournalScreen() {
 
             {/* ── Year / Month picker modal ─────────────────────────────── */}
             <Modal
-                visible={pickerMode !== 'none'}
+                visible={pickerMode !== "none"}
                 transparent
                 animationType="fade"
                 statusBarTranslucent
@@ -474,7 +479,7 @@ export default function JournalScreen() {
                         style={[
                             styles.pickerBackdrop,
                             {
-                                backgroundColor: 'rgba(0,0,0,0.55)',
+                                backgroundColor: "rgba(0,0,0,0.55)",
                                 padding: spacing.md * 2,
                             },
                         ]}
@@ -486,8 +491,7 @@ export default function JournalScreen() {
                                 style={[
                                     styles.pickerCard,
                                     {
-                                        backgroundColor:
-                                            colors.surfaceElevated,
+                                        backgroundColor: colors.surfaceElevated,
                                         borderRadius: borderRadius.xl,
                                         padding: spacing.md,
                                     },
@@ -500,10 +504,10 @@ export default function JournalScreen() {
                                         { marginBottom: spacing.md },
                                     ]}
                                 >
-                                    {pickerMode === 'month' ? (
+                                    {pickerMode === "month" ? (
                                         <TouchableOpacity
                                             onPress={() =>
-                                                setPickerMode('year')
+                                                setPickerMode("year")
                                             }
                                             style={styles.pickerBackBtn}
                                         >
@@ -536,14 +540,14 @@ export default function JournalScreen() {
                                 </View>
 
                                 {/* Year grid */}
-                                {pickerMode === 'year' && (
+                                {pickerMode === "year" && (
                                     <View style={styles.pickerGrid}>
                                         {years.map(renderPickerYear)}
                                     </View>
                                 )}
 
                                 {/* Month grid */}
-                                {pickerMode === 'month' && (
+                                {pickerMode === "month" && (
                                     <View style={styles.pickerGrid}>
                                         {months.map(renderPickerMonth)}
                                     </View>
@@ -564,54 +568,54 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     calendarContainer: {
-        overflow: 'hidden',
+        overflow: "hidden",
     },
     calendar: {
-        overflow: 'hidden',
+        overflow: "hidden",
     },
     calendarHeaderTitle: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 4,   // spacing.xs
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 4, // spacing.xs
         paddingHorizontal: 8, // spacing.sm
     },
     dayViewWrapper: {
         flex: 1,
     },
     fab: {
-        alignItems: 'center',
+        alignItems: "center",
         height: 56,
-        justifyContent: 'center',
-        position: 'absolute',
+        justifyContent: "center",
+        position: "absolute",
         width: 56,
     },
     pickerBackdrop: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
     },
     pickerCard: {
-        width: '100%',
+        width: "100%",
         maxWidth: 340,
     },
     pickerHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
     },
     pickerBackBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         minWidth: 60,
     },
     pickerGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
+        flexDirection: "row",
+        flexWrap: "wrap",
     },
     pickerCell: {
-        width: '25%',
+        width: "25%",
         paddingVertical: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: "center",
+        justifyContent: "center",
     },
 });
