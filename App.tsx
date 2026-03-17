@@ -1,21 +1,21 @@
-import React from 'react';
-import { StatusBar, Text } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { DatabaseProvider } from './db';
-import { ThemeProvider, useTheme } from './theme';
-import { LanguageProvider } from './i18n/LanguageProvider';
-import { useTranslation } from 'react-i18next';
-import './i18n'; // Inicjalizacja i18next
+import React from "react";
+import { StatusBar, Text } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { DatabaseProvider } from "./db";
+import { ThemeProvider, useTheme } from "./theme";
+import { LanguageProvider } from "./i18n/LanguageProvider";
+import { useTranslation } from "react-i18next";
+import "./i18n"; // Inicjalizacja i18next
 
-import TodayScreen from './app/screens/TodayScreen';
-import HistoryScreen from './app/screens/HistoryScreen';
-import FavoritesScreen from './app/screens/FavoritesScreen';
-import StatsScreen from './app/screens/StatsScreen';
-import SettingsScreen from './app/screens/SettingsScreen';
+import TodayScreen from "./app/screens/TodayScreen";
+import HistoryScreen from "./app/screens/HistoryScreen";
+import FavoritesScreen from "./app/screens/FavoritesScreen";
+import StatsScreen from "./app/screens/StatsScreen";
+import SettingsScreen from "./app/screens/SettingsScreen";
 
 type TabIconProps = {
     color: string;
@@ -60,7 +60,7 @@ function AppNavigator() {
                     name="Today"
                     component={TodayScreen}
                     options={{
-                        tabBarLabel: t('tabs.today'),
+                        tabBarLabel: t("tabs.today"),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="🍽️" size={size} />
                         ),
@@ -70,7 +70,7 @@ function AppNavigator() {
                     name="History"
                     component={HistoryScreen}
                     options={{
-                        tabBarLabel: t('tabs.history'),
+                        tabBarLabel: t("tabs.history"),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="📅" size={size} />
                         ),
@@ -80,7 +80,7 @@ function AppNavigator() {
                     name="Favorites"
                     component={FavoritesScreen}
                     options={{
-                        tabBarLabel: t('tabs.favorites'),
+                        tabBarLabel: t("tabs.favorites"),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="⭐" size={size} />
                         ),
@@ -90,7 +90,7 @@ function AppNavigator() {
                     name="Stats"
                     component={StatsScreen}
                     options={{
-                        tabBarLabel: t('tabs.stats'),
+                        tabBarLabel: t("tabs.stats"),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="📊" size={size} />
                         ),
@@ -100,7 +100,7 @@ function AppNavigator() {
                     name="Settings"
                     component={SettingsScreen}
                     options={{
-                        tabBarLabel: t('tabs.settings'),
+                        tabBarLabel: t("tabs.settings"),
                         tabBarIcon: ({ size }: TabIconProps) => (
                             <TabIcon emoji="⚙️" size={size} />
                         ),
@@ -132,3 +132,4 @@ export default function App() {
         </GestureHandlerRootView>
     );
 }
+

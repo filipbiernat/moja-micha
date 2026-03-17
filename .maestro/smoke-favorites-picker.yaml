@@ -4,14 +4,14 @@ appId: com.anonymous.mojamicha
 ---
 - launchApp
 - tapOn:
-    id: "today-quick-entry-fab"
+      id: "today-quick-entry-fab"
 - assertVisible:
-    id: "meal-form-quick-favorites-btn"
+      id: "meal-form-quick-favorites-btn"
 - tapOn:
-    id: "meal-form-quick-favorites-btn"
+      id: "meal-form-quick-favorites-btn"
 - assertVisible:
-    text: "Wybierz ulubiony"
+      text: "Wybierz ulubiony"
 - tapOn:
-    id: "favorites-picker-close-btn"
+      id: "favorites-picker-close-btn"
 - assertNotVisible:
-    text: "Wybierz ulubiony"
+      text: "Wybierz ulubiony"

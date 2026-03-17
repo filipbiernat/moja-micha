@@ -31,14 +31,6 @@ Problem: Rendering @react-native-community/datetimepicker inside a BottomSheet c
 Solution: Render the DateTimePicker conditionally using a boolean flag (showDatePicker / showTimePicker) as a sibling of the BottomSheet (outside the sheet tree, but inside the same parent View). Both components must co-exist in the same JSX fragment: `<>...</BottomSheet>{showDatePicker && <DateTimePicker ... />}</>`.
 Discovered By: autonomous-orchestrator
 
-### 2026-03-16 — Use Expo Go for manual device testing (not --android flag)
-
-Task: TASK-005
-Context: Manual testing workflow on Windows
-Problem: `npx expo start --android` fails on Windows when `ANDROID_HOME` is not set and `adb` is not in PATH (SDK installed to a non-default location or emulator not configured).
-Solution: Use `npx expo start` (without `--android`) and scan the QR code with the Expo Go app on a physical Android device. Both device and computer must be on the same Wi-Fi network. This is the standard dev workflow for this project.
-Discovered By: autonomous-orchestrator
-
 ### 2026-03-16 — Use BottomSheetModal (not sibling BottomSheet) for overlay picker on another sheet
 
 Task: TASK-005
@@ -69,3 +61,21 @@ Context: Today tab date state in React Navigation bottom tabs
 Problem: A tab screen that stores a browsed date in local state keeps that value across tab switches because the screen stays mounted.
 Solution: Keep the date state in the screen, but reset it with a focus-driven effect when the tab becomes active again.
 Discovered By: autonomous-orchestrator
+
+### 2026-03-17 — Maestro E2E setup on Windows for Expo dev builds
+
+Task: TASK-005 (Maestro setup)
+Context: Automated E2E testing on Windows with Android emulator
+Problem: Setting up Maestro test automation required several non-obvious steps: Java 17+ (Maestro 2.x requires Java 17+, not 8), correct ANDROID_HOME, Metro bundler on port 8081 for the dev build (not Expo Go on 8082), and using `npx expo run:android` to create the dev build APK.
+Solution:
+1. Install Java 21 LTS: `winget install EclipseAdoptium.Temurin.21.JDK`
+2. Install Maestro: `curl -Ls "https://get.maestro.mobile.dev" | bash`
+3. Add to PATH: JAVA_HOME, ANDROID_HOME/platform-tools, ANDROID_HOME/emulator, ~/.maestro/bin
+4. Build dev APK: `JAVA_HOME="..." npx expo run:android` (installs `com.anonymous.mojamicha` on emulator)
+5. Start Metro for dev build: `npx expo start --dev-client --port 8081` (NOT `--android` which picks Expo Go)
+6. Launch app via ADB: `adb -s emulator-5554 shell am start -n com.anonymous.mojamicha/.MainActivity`
+7. Run tests: `maestro test .maestro/smoke-*.yaml`
+Key pitfall: Dev build connects to host's localhost:8081 via 10.0.2.2:8081. If Metro runs on 8082 (Expo Go), the dev build gets a blank loading screen.
+Key pitfall: Maestro text input does NOT support Unicode — use ASCII only in `inputText` steps.
+Key pitfall: Quick-entry form testIDs differ from full form: use `meal-form-quick-input`/`meal-form-quick-save-btn` (NOT `meal-form-meal-text-input`/`meal-form-save-btn`).
+Discovered By: Ninja agent

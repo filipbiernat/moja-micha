@@ -5,12 +5,15 @@
 **Date:** 2026-03-16
 
 ## Phase
+
 Replace React Native Modal favorites picker with BottomSheet sibling in `components/MealFormSheet.tsx`.
 
 ## Changed Files Reviewed
+
 - `components/MealFormSheet.tsx`
 
 ## Acceptance Criteria Results
+
 1. ✅ No React Native Modal or FlatList — uses BottomSheetSectionList + BottomSheetBackdrop
 2. ✅ showFavoritesPicker boolean removed — controlled via favoritesSheetRef
 3. ✅ favoritesSections replaces flat favoritesList — sections split by type
@@ -25,6 +28,7 @@ Replace React Native Modal favorites picker with BottomSheet sibling in `compone
 12. ✅ No regression in rest of MealFormSheet
 
 ## Issues (post-review fix applied)
+
 - [minor, fixed] Added `onClose={() => setFavoritesSections([])}` to favorites BottomSheet prop
 - [minor, accepted] Header/empty-state not wrapped in BottomSheetView — non-blocking
 - [minor, accepted] Close button accessibilityLabel reuses btn_cancel key — non-blocking

@@ -171,28 +171,37 @@ export const MealFormSheet = forwardRef<
 
     const handleOpenFavoritesPicker = useCallback(() => {
         const templates = getFavoritesByType(db, "template");
-        const starred   = getFavoritesByType(db, "starred");
+        const starred = getFavoritesByType(db, "starred");
         const sections: Array<{ title: string; data: Favorite[] }> = [];
         if (templates.length > 0) {
-            sections.push({ title: t("mealForm.favorites_picker_section_templates"), data: templates });
+            sections.push({
+                title: t("mealForm.favorites_picker_section_templates"),
+                data: templates,
+            });
         }
         if (starred.length > 0) {
-            sections.push({ title: t("mealForm.favorites_picker_section_starred"), data: starred });
+            sections.push({
+                title: t("mealForm.favorites_picker_section_starred"),
+                data: starred,
+            });
         }
         setFavoritesSections(sections);
         setShowFavoritesPicker(true);
     }, [db, t]);
 
-    const handlePickFavorite = useCallback((fav: Favorite) => {
-        setMealText(fav.mealText);
-        if (fav.calories != null) {
-            setCalories(fav.calories.toString());
-        }
-        if (validationError) {
-            setValidationError(null);
-        }
-        setShowFavoritesPicker(false);
-    }, [validationError]);
+    const handlePickFavorite = useCallback(
+        (fav: Favorite) => {
+            setMealText(fav.mealText);
+            if (fav.calories != null) {
+                setCalories(fav.calories.toString());
+            }
+            if (validationError) {
+                setValidationError(null);
+            }
+            setShowFavoritesPicker(false);
+        },
+        [validationError],
+    );
 
     // ── Save ─────────────────────────────────────────────────────────────────
 
@@ -989,7 +998,8 @@ export const MealFormSheet = forwardRef<
                             style={{
                                 color: colors.textPrimary,
                                 fontSize: typography.fontSize.lg,
-                                fontWeight: typography.fontWeight.bold as TextStyle["fontWeight"],
+                                fontWeight: typography.fontWeight
+                                    .bold as TextStyle["fontWeight"],
                                 flex: 1,
                             }}
                         >
@@ -1001,7 +1011,11 @@ export const MealFormSheet = forwardRef<
                             testID="favorites-picker-close-btn"
                             accessibilityLabel={t("mealForm.btn_cancel")}
                         >
-                            <Ionicons name="close" size={22} color={colors.textMuted} />
+                            <Ionicons
+                                name="close"
+                                size={22}
+                                color={colors.textMuted}
+                            />
                         </TouchableOpacity>
                     </View>
                     {favoritesSections.length === 0 ? (
@@ -1020,7 +1034,9 @@ export const MealFormSheet = forwardRef<
                         <SectionList
                             sections={favoritesSections}
                             keyExtractor={(item) => item.id.toString()}
-                            contentContainerStyle={{ paddingVertical: spacing.sm }}
+                            contentContainerStyle={{
+                                paddingVertical: spacing.sm,
+                            }}
                             renderSectionHeader={({ section: { title } }) => (
                                 <Text
                                     style={[
@@ -1067,8 +1083,11 @@ export const MealFormSheet = forwardRef<
                                             <Text
                                                 style={{
                                                     color: colors.textPrimary,
-                                                    fontSize: typography.fontSize.md,
-                                                    fontWeight: typography.fontWeight.semiBold as TextStyle["fontWeight"],
+                                                    fontSize:
+                                                        typography.fontSize.md,
+                                                    fontWeight: typography
+                                                        .fontWeight
+                                                        .semiBold as TextStyle["fontWeight"],
                                                 }}
                                                 numberOfLines={1}
                                             >
@@ -1077,7 +1096,8 @@ export const MealFormSheet = forwardRef<
                                             <Text
                                                 style={{
                                                     color: colors.textSecondary,
-                                                    fontSize: typography.fontSize.sm,
+                                                    fontSize:
+                                                        typography.fontSize.sm,
                                                     marginTop: 2,
                                                 }}
                                                 numberOfLines={2}
@@ -1090,8 +1110,11 @@ export const MealFormSheet = forwardRef<
                                         <Text
                                             style={{
                                                 color: colors.secondary,
-                                                fontSize: typography.fontSize.sm,
-                                                fontWeight: typography.fontWeight.bold as TextStyle["fontWeight"],
+                                                fontSize:
+                                                    typography.fontSize.sm,
+                                                fontWeight: typography
+                                                    .fontWeight
+                                                    .bold as TextStyle["fontWeight"],
                                                 marginLeft: spacing.sm,
                                             }}
                                         >
