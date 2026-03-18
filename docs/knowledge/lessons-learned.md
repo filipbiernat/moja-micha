@@ -89,6 +89,14 @@ Problem: `BottomSheetTextInput` from `@gorhom/bottom-sheet` v5 does not accept t
 Solution: For ADB-only testing, limit automated checks to: navigation, empty state verification, sheet opening, field presence + testID verification, focus state, and Metro log inspection (zero errors). Full form-fill flows require either: (a) manual device testing, or (b) Maestro E2E with a dev build (`npx expo run:android`) using `inputText` YAML steps — Maestro routes text through the accessibility layer and correctly reaches BottomSheetTextInput.
 Discovered By: Ninja agent
 
+### 2026-03-18 — When removing i18n keys, remove only the exact target
+
+Task: TASK-009
+Context: Removing unused i18n keys (`chart_today`, `per_day`) from locale files
+Problem: The `kcal_unit` key was accidentally deleted together with `per_day` because both were on adjacent lines and the replacement pattern inadvertently covered them.
+Solution: Always scope each replacement to a single key change; verify remaining keys with grep after any i18n edit.
+Discovered By: Ninja agent
+
 ### 2026-03-18 — BottomSheet above bottom tabs needs footer safe-area padding
 
 Task: TASK-008

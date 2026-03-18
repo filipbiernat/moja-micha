@@ -214,12 +214,12 @@ moja-micha/
 
 ### 10. Ekran: Statystyki
 
-- [ ] Przełącznik widoku: 7 dni / 30 dni
-- [ ] Wykres słupkowy – kalorie per dzień
-- [ ] Linia trendu (średnia krocząca)
-- [ ] Podsumowanie: średnia / maks / min dzienna
-- [ ] Streak: bieżący i rekordowy
-- [ ] Obsługa braku danych (pusty stan)
+- [x] Przełącznik widoku: 7 dni / 30 dni
+- [x] Wykres słupkowy – kalorie per dzień
+- [x] Linia trendu (średnia krocząca)
+- [x] Podsumowanie: średnia / maks / min dzienna
+- [x] Streak: bieżący i rekordowy
+- [x] Obsługa braku danych (pusty stan)
 
 ### 11. Ekran: Ustawienia
 

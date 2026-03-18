@@ -1,4 +1,4 @@
-import { eq, desc, sql, and, gte, lte, ne } from 'drizzle-orm';
+import { eq, desc, sql, and, gte, lte, isNotNull } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { meals, type Meal, type NewMeal, type MealType } from './schema';
 
@@ -210,6 +210,38 @@ export function getDatesWithMeals(
 }
 
 /**
+ * Get the all-time record (longest) streak of consecutive days with at least one meal.
+ */
+export function getRecordStreak(db: DB): number {
+    const rows = db
+        .selectDistinct({ date: meals.date })
+        .from(meals)
+        .orderBy(meals.date)
+        .all();
+
+    if (rows.length === 0) return 0;
+
+    let maxStreak = 1;
+    let currentStreak = 1;
+
+    for (let i = 1; i < rows.length; i++) {
+        const prev = new Date(rows[i - 1].date + 'T00:00:00');
+        const curr = new Date(rows[i].date + 'T00:00:00');
+        const diff = Math.floor(
+            (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (diff === 1) {
+            currentStreak++;
+            if (currentStreak > maxStreak) maxStreak = currentStreak;
+        } else {
+            currentStreak = 1;
+        }
+    }
+
+    return maxStreak;
+}
+
+/**
  * Get calorie summary for a date range.
  */
 export function getCalorieSummary(
@@ -227,7 +259,7 @@ export function getCalorieSummary(
             and(
                 gte(meals.date, startDate),
                 lte(meals.date, endDate),
-                ne(meals.calories, sql`NULL`)
+                isNotNull(meals.calories)
             )
         )
         .groupBy(meals.date)

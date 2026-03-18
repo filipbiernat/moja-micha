@@ -28,6 +28,7 @@ export {
     isMealStarred,
     getRecentUniqueMeals,
     getStreak,
+    getRecordStreak,
     getDatesWithMeals,
     getCalorieSummary,
     type CreateMealInput,

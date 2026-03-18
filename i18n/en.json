@@ -122,5 +122,23 @@
     "newest": "Newest first",
     "oldest": "Oldest first",
     "alphabetical": "A-Z"
+  },
+  "stats": {
+    "title": "Stats",
+    "period_7d": "7 days",
+    "period_30d": "30 days",
+    "avg": "Avg",
+    "max": "Max",
+    "min": "Min",
+    "streak_current": "Current streak",
+    "streak_record": "Record",
+    "kcal_unit": "kcal",
+    "streak_days_one": "{{count}} day",
+    "streak_days_other": "{{count}} days",
+    "no_data_title": "No data",
+    "no_data_subtitle": "Add meals with calories to see charts.",
+    "section_chart": "CALORIES",
+    "section_summary": "SUMMARY",
+    "section_streak": "STREAKS"
   }
 }
