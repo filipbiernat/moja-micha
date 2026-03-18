@@ -16,6 +16,7 @@ import React, {
 import {
     Alert,
     Modal,
+    ScrollView,
     SectionList,
     StyleSheet,
     Text,
@@ -27,7 +28,7 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDatabase } from "../db/DatabaseProvider";
 import { getFavoritesByType } from "../db/favorites";
-import { createMeal, deleteMeal, updateMeal } from "../db/meals";
+import { createMeal, deleteMeal, getRecentUniqueMeals, updateMeal } from "../db/meals";
 import type { Favorite, Meal, MealType } from "../db/schema";
 import { useTheme } from "../theme";
 import {
@@ -100,22 +101,36 @@ export const MealFormSheet = forwardRef<
         Array<{ title: string; data: Favorite[] }>
     >([]);
     const [showFavoritesPicker, setShowFavoritesPicker] = useState(false);
+    const [recentSuggestions, setRecentSuggestions] = useState<string[]>([]);
+
+    // ── Computed suggestions ─────────────────────────────────────────────────
+    const filteredSuggestions = useMemo(() => {
+        const query = mealText.trim().toLowerCase();
+        if (!query) return recentSuggestions;
+        return recentSuggestions.filter((s) =>
+            s.toLowerCase().includes(query),
+        );
+    }, [recentSuggestions, mealText]);
     // ── Reset helper ─────────────────────────────────────────────────────────
 
-    const resetForAdd = useCallback((date: string) => {
-        const now = new Date();
-        setMode("add");
-        setEditMealId(null);
-        setMealText("");
-        setMealType(getMealTypeForCurrentTime(now));
-        setSelectedDate(date);
-        setSelectedTime(getLocalTimeString());
-        setCalories("");
-        setNotes("");
-        setValidationError(null);
-        setShowDatePicker(false);
-        setShowTimePicker(false);
-    }, []);
+    const resetForAdd = useCallback(
+        (date: string) => {
+            const now = new Date();
+            setMode("add");
+            setEditMealId(null);
+            setMealText("");
+            setMealType(getMealTypeForCurrentTime(now));
+            setSelectedDate(date);
+            setSelectedTime(getLocalTimeString());
+            setCalories("");
+            setNotes("");
+            setValidationError(null);
+            setShowDatePicker(false);
+            setShowTimePicker(false);
+            setRecentSuggestions(getRecentUniqueMeals(db, 10));
+        },
+        [db],
+    );
 
     // ── Imperative handle ────────────────────────────────────────────────────
 
@@ -137,6 +152,7 @@ export const MealFormSheet = forwardRef<
             setValidationError(null);
             setShowDatePicker(false);
             setShowTimePicker(false);
+            setRecentSuggestions(getRecentUniqueMeals(db, 10));
             setIsExpanded(true);
             bottomSheetRef.current?.snapToIndex(SNAP_FULL);
         },
@@ -202,6 +218,16 @@ export const MealFormSheet = forwardRef<
                 setValidationError(null);
             }
             setShowFavoritesPicker(false);
+        },
+        [validationError],
+    );
+
+    const handlePickSuggestion = useCallback(
+        (suggestion: string) => {
+            setMealText(suggestion);
+            if (validationError) {
+                setValidationError(null);
+            }
         },
         [validationError],
     );
@@ -669,6 +695,47 @@ export const MealFormSheet = forwardRef<
                                 textAlignVertical="top"
                                 value={mealText}
                             />
+
+                            {/* Recent meal suggestions */}
+                            {filteredSuggestions.length > 0 && (
+                                <ScrollView
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    keyboardShouldPersistTaps="handled"
+                                    contentContainerStyle={{
+                                        paddingVertical: spacing.xs,
+                                        paddingBottom: spacing.sm,
+                                    }}
+                                >
+                                    {filteredSuggestions.map((s) => (
+                                        <TouchableOpacity
+                                            key={s}
+                                            testID={`meal-form-suggestion-chip-${s}`}
+                                            accessibilityLabel={s}
+                                            onPress={() => handlePickSuggestion(s)}
+                                            style={{
+                                                backgroundColor: colors.surface,
+                                                borderColor: colors.border,
+                                                borderWidth: 1,
+                                                borderRadius: borderRadius.full,
+                                                paddingHorizontal: spacing.md,
+                                                paddingVertical: spacing.xs,
+                                                marginRight: spacing.sm,
+                                            }}
+                                        >
+                                            <Text
+                                                numberOfLines={1}
+                                                style={{
+                                                    color: colors.textSecondary,
+                                                    fontSize: typography.fontSize.sm,
+                                                }}
+                                            >
+                                                {s}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            )}
                             {validationError ? (
                                 <Text
                                     style={{
@@ -906,6 +973,47 @@ export const MealFormSheet = forwardRef<
                             textAlignVertical="top"
                             value={mealText}
                         />
+
+                        {/* Recent meal suggestions */}
+                        {filteredSuggestions.length > 0 && (
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                keyboardShouldPersistTaps="handled"
+                                contentContainerStyle={{
+                                    paddingVertical: spacing.xs,
+                                    paddingBottom: spacing.sm,
+                                }}
+                            >
+                                {filteredSuggestions.map((s) => (
+                                    <TouchableOpacity
+                                        key={s}
+                                        testID={`meal-form-suggestion-chip-${s}`}
+                                        accessibilityLabel={s}
+                                        onPress={() => handlePickSuggestion(s)}
+                                        style={{
+                                            backgroundColor: colors.surface,
+                                            borderColor: colors.border,
+                                            borderWidth: 1,
+                                            borderRadius: borderRadius.full,
+                                            paddingHorizontal: spacing.md,
+                                            paddingVertical: spacing.xs,
+                                            marginRight: spacing.sm,
+                                        }}
+                                    >
+                                        <Text
+                                            numberOfLines={1}
+                                            style={{
+                                                color: colors.textSecondary,
+                                                fontSize: typography.fontSize.sm,
+                                            }}
+                                        >
+                                            {s}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        )}
 
                         {validationError ? (
                             <Text
