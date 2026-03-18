@@ -14,6 +14,7 @@ import React, {
     useState,
 } from "react";
 import {
+    Alert,
     Modal,
     SectionList,
     StyleSheet,
@@ -23,9 +24,10 @@ import {
     View,
 } from "react-native";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDatabase } from "../db/DatabaseProvider";
 import { getFavoritesByType } from "../db/favorites";
-import { createMeal, updateMeal } from "../db/meals";
+import { createMeal, deleteMeal, updateMeal } from "../db/meals";
 import type { Favorite, Meal, MealType } from "../db/schema";
 import { useTheme } from "../theme";
 import {
@@ -71,6 +73,7 @@ export const MealFormSheet = forwardRef<
     const { t } = useTranslation();
     const db = useDatabase();
     const { colors, typography, spacing, borderRadius } = useTheme();
+    const insets = useSafeAreaInsets();
 
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ["50%", "92%"], []);
@@ -264,6 +267,37 @@ export const MealFormSheet = forwardRef<
         onSaved,
         t,
     ]);
+
+    const handleDelete = useCallback(() => {
+        if (editMealId === null) {
+            return;
+        }
+
+        Alert.alert(
+            t("mealForm.delete_confirm_title"),
+            t("mealForm.delete_confirm_message"),
+            [
+                {
+                    text: t("mealForm.delete_confirm_cancel"),
+                    style: "cancel",
+                },
+                {
+                    text: t("mealForm.delete_confirm_ok"),
+                    style: "destructive",
+                    onPress: () => {
+                        try {
+                            deleteMeal(db, editMealId);
+                            bottomSheetRef.current?.close();
+                            onSaved(selectedDate);
+                        } catch (error) {
+                            console.error("Failed to delete meal:", error);
+                            setValidationError(t("mealForm.delete_error"));
+                        }
+                    },
+                },
+            ],
+        );
+    }, [db, editMealId, onSaved, selectedDate, t]);
 
     // ── Date/time picker handlers ────────────────────────────────────────────
 
@@ -708,7 +742,7 @@ export const MealFormSheet = forwardRef<
                                 {
                                     paddingHorizontal: spacing.lg,
                                     paddingTop: spacing.sm,
-                                    paddingBottom: spacing.lg,
+                                    paddingBottom: spacing.lg + insets.bottom,
                                     borderTopColor: colors.divider,
                                     gap: spacing.sm,
                                 },
@@ -740,6 +774,37 @@ export const MealFormSheet = forwardRef<
                                     {t("mealForm.btn_cancel")}
                                 </Text>
                             </TouchableOpacity>
+
+                            {mode === "edit" && (
+                                <TouchableOpacity
+                                    style={[
+                                        styles.deleteBtn,
+                                        {
+                                            backgroundColor: colors.surface,
+                                            borderColor: colors.error,
+                                            borderRadius: borderRadius.md,
+                                            paddingVertical: spacing.md,
+                                        },
+                                    ]}
+                                    onPress={handleDelete}
+                                    activeOpacity={0.85}
+                                    testID="meal-form-delete-btn"
+                                    accessibilityLabel={t(
+                                        "mealForm.btn_delete",
+                                    )}
+                                >
+                                    <Text
+                                        style={{
+                                            color: colors.error,
+                                            fontSize: typography.fontSize.md,
+                                            fontWeight:
+                                                typography.fontWeight.semiBold,
+                                        }}
+                                    >
+                                        {t("mealForm.btn_delete")}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
 
                             <TouchableOpacity
                                 style={[
@@ -1207,6 +1272,11 @@ const styles = StyleSheet.create({
         borderTopWidth: StyleSheet.hairlineWidth,
     },
     cancelBtn: {
+        flex: 1,
+        alignItems: "center",
+        borderWidth: 1,
+    },
+    deleteBtn: {
         flex: 1,
         alignItems: "center",
         borderWidth: 1,

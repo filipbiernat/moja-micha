@@ -68,6 +68,7 @@ Task: TASK-005 (Maestro setup)
 Context: Automated E2E testing on Windows with Android emulator
 Problem: Setting up Maestro test automation required several non-obvious steps: Java 17+ (Maestro 2.x requires Java 17+, not 8), correct ANDROID_HOME, Metro bundler on port 8081 for the dev build (not Expo Go on 8082), and using `npx expo run:android` to create the dev build APK.
 Solution:
+
 1. Install Java 21 LTS: `winget install EclipseAdoptium.Temurin.21.JDK`
 2. Install Maestro: `curl -Ls "https://get.maestro.mobile.dev" | bash`
 3. Add to PATH: JAVA_HOME, ANDROID_HOME/platform-tools, ANDROID_HOME/emulator, ~/.maestro/bin
@@ -75,7 +76,23 @@ Solution:
 5. Start Metro for dev build: `npx expo start --dev-client --port 8081` (NOT `--android` which picks Expo Go)
 6. Launch app via ADB: `adb -s emulator-5554 shell am start -n com.anonymous.mojamicha/.MainActivity`
 7. Run tests: `maestro test .maestro/smoke-*.yaml`
-Key pitfall: Dev build connects to host's localhost:8081 via 10.0.2.2:8081. If Metro runs on 8082 (Expo Go), the dev build gets a blank loading screen.
-Key pitfall: Maestro text input does NOT support Unicode — use ASCII only in `inputText` steps.
-Key pitfall: Quick-entry form testIDs differ from full form: use `meal-form-quick-input`/`meal-form-quick-save-btn` (NOT `meal-form-meal-text-input`/`meal-form-save-btn`).
+   Key pitfall: Dev build connects to host's localhost:8081 via 10.0.2.2:8081. If Metro runs on 8082 (Expo Go), the dev build gets a blank loading screen.
+   Key pitfall: Maestro text input does NOT support Unicode — use ASCII only in `inputText` steps.
+   Key pitfall: Quick-entry form testIDs differ from full form: use `meal-form-quick-input`/`meal-form-quick-save-btn` (NOT `meal-form-meal-text-input`/`meal-form-save-btn`).
+   Discovered By: Ninja agent
+
+### 2025-05-xx — BottomSheetTextInput is incompatible with ADB `input text` and `keyevent`
+
+Task: TASK-008
+Context: ADB-automated emulator smoke testing of TemplateFormSheet
+Problem: `BottomSheetTextInput` from `@gorhom/bottom-sheet` v5 does not accept text from `adb shell input text "..."` or individual `adb shell input keyevent <code>` commands, even when the field has confirmed focus (`focused="true"` in UI dump). The field stays unchanged. This affects all smoke test scenarios that require form fill (template create/edit, meal quick-entry with BottomSheet components).
+Solution: For ADB-only testing, limit automated checks to: navigation, empty state verification, sheet opening, field presence + testID verification, focus state, and Metro log inspection (zero errors). Full form-fill flows require either: (a) manual device testing, or (b) Maestro E2E with a dev build (`npx expo run:android`) using `inputText` YAML steps — Maestro routes text through the accessibility layer and correctly reaches BottomSheetTextInput.
+Discovered By: Ninja agent
+
+### 2026-03-18 — BottomSheet above bottom tabs needs footer safe-area padding
+
+Task: TASK-008
+Context: TemplateFormSheet / MealFormSheet on screens with bottom tab navigation
+Problem: A `BottomSheet` can render its last CTA partially behind the bottom tab bar when the sheet content relies only on static bottom padding. Adding `bottomInset` directly on the sheet can overcorrect and create a visible external gap above the tab bar.
+Solution: Keep the sheet attached to the bottom edge and mirror `MealFormSheet`: add `useSafeAreaInsets()` only to the fixed footer padding. This keeps the CTA above the tab bar without creating a detached bottom gap.
 Discovered By: Ninja agent

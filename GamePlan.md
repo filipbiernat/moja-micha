@@ -201,16 +201,16 @@ moja-micha/
 
 ### 9. Ekran: Ulubione
 
-- [ ] Zakładki lub sekcje: Szablony | Oznaczone gwiazdką
-- [ ] **Szablony:**
+- [x] Zakładki lub sekcje: Szablony | Oznaczone gwiazdką
+- [x] **Szablony:**
     - Lista szablonów
     - Tworzenie nowego szablonu (nazwa, treść, opcjonalnie kcal)
     - Edycja szablonu
     - Usuwanie szablonu
-- [ ] **Oznaczone gwiazdką:**
+- [x] **Oznaczone gwiazdką:**
     - Lista historycznych wpisów z gwiazdką
     - Możliwość odpinania gwiazdki
-- [ ] Użycie ulubionego → nowy wpis z aktualną godziną, treść skopiowana
+- [x] Użycie ulubionego → nowy wpis z aktualną godziną, treść skopiowana
 
 ### 10. Ekran: Statystyki
 

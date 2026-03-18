@@ -130,6 +130,16 @@ export function isMealStarred(db: DB, id: number): boolean {
 }
 
 /**
+ * Explicitly set the starred status of a meal.
+ */
+export function setMealStarred(db: DB, id: number, starred: boolean): void {
+    db.update(meals)
+        .set({ isStarred: starred ? 1 : 0, updatedAt: new Date().toISOString() })
+        .where(eq(meals.id, id))
+        .run();
+}
+
+/**
  * Get the N most recent unique meal_text values (for autocomplete).
  */
 export function getRecentUniqueMeals(db: DB, limit: number = 20): string[] {

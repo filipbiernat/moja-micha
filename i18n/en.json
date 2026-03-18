@@ -42,7 +42,11 @@
     "kcal_sum": "Total calories",
     "kcal_goal": "Goal: {{goal}} kcal",
     "streak": "{{count}} day streak",
-    "streak_plural": "{{count}} days streak"
+    "streak_plural": "{{count}} days streak",
+    "delete_confirm_title": "Delete meal",
+    "delete_confirm_message": "Are you sure you want to delete this meal?",
+    "delete_confirm_ok": "Delete",
+    "delete_confirm_cancel": "Cancel"
   },
   "today": {
     "quick_entry_open": "Open quick meal entry"
@@ -64,13 +68,59 @@
     "btn_collapse": "Collapse",
     "btn_save": "Save meal",
     "btn_saving": "Saving\u2026",
+    "btn_delete": "Delete meal",
     "btn_cancel": "Cancel",
     "btn_from_favorites": "From favorites",
     "favorites_picker_title": "Pick a favorite",
     "favorites_picker_empty": "No favorites yet.",
     "favorites_picker_section_templates": "Templates",
     "favorites_picker_section_starred": "Starred meals",
+    "delete_confirm_title": "Delete meal",
+    "delete_confirm_message": "Are you sure you want to delete this meal?",
+    "delete_confirm_ok": "Delete",
+    "delete_confirm_cancel": "Cancel",
     "validation_required": "Meal description is required.",
-    "save_error": "Could not save the meal."
+    "save_error": "Could not save the meal.",
+    "delete_error": "Could not delete the meal."
+  },
+  "favorites": {
+    "tab_templates": "Templates",
+    "tab_starred": "Starred",
+    "templates_empty_title": "No templates yet",
+    "templates_empty_subtitle": "Add your first template!",
+    "starred_empty_title": "No starred entries",
+    "starred_empty_subtitle": "Star entries from the journal.",
+    "btn_add": "Add template",
+    "btn_use": "Use",
+    "btn_edit": "Edit",
+    "btn_delete": "Delete",
+    "btn_unstar": "Unstar",
+    "template_form_title_add": "New template",
+    "template_form_title_edit": "Edit template",
+    "field_name": "Name",
+    "field_meal_text": "Meal",
+    "field_calories": "Calories (optional)",
+    "placeholder_name": "e.g. Oatmeal with fruit",
+    "placeholder_meal_text": "What does this meal contain?",
+    "placeholder_calories": "e.g. 300",
+    "btn_save": "Save",
+    "btn_cancel": "Cancel",
+    "validation_name_required": "Name is required.",
+    "validation_meal_text_required": "Meal description is required.",
+    "delete_confirm_title": "Delete template",
+    "delete_confirm_message": "Are you sure you want to delete this template?",
+    "delete_confirm_ok": "Delete",
+    "delete_confirm_cancel": "Cancel",
+    "use_success_title": "Added!",
+    "use_success_message": "Meal has been added to your journal.",
+    "use_error": "Could not add the meal.",
+    "save_error": "Could not save the template.",
+    "sort_by_name": "A–Z",
+    "sort_by_date": "Newest"
+  },
+  "sort": {
+    "newest": "Newest first",
+    "oldest": "Oldest first",
+    "alphabetical": "A-Z"
   }
 }

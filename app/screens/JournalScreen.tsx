@@ -186,6 +186,7 @@ export default function JournalScreen() {
             const today = getLocalDateString();
             setCurrentDate(today);
             setVisibleMonthKey(today.substring(0, 7) + "-01");
+            setRefreshKey((prev) => prev + 1);
             closeCalendar();
         }, [closeCalendar]),
     );

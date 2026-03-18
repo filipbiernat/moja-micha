@@ -15,6 +15,9 @@ import { getSetting } from "../db/settings";
 import { SETTING_KEYS } from "../db/schema";
 import { useTheme } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
+import { SortCycleButton, type SortCycleOption } from "./SortCycleButton";
+
+type MealSortOrder = "newest" | "oldest" | "alpha";
 
 export interface DayViewProps {
     date: string; // YYYY-MM-DD
@@ -40,7 +43,7 @@ export function DayView({
     const { colors, typography, spacing, borderRadius } = useTheme();
 
     const [meals, setMeals] = useState<Meal[]>([]);
-    const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc"); // 'desc' = newest first
+    const [sortOrder, setSortOrder] = useState<MealSortOrder>("newest");
     const [calorieGoal, setCalorieGoal] = useState<number | null>(null);
     const [streak, setStreak] = useState<number>(0);
 
@@ -72,13 +75,38 @@ export function DayView({
         return meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
     }, [meals]);
 
+    const sortOptions = useMemo<ReadonlyArray<SortCycleOption<MealSortOrder>>>(
+        () => [
+            {
+                value: "newest",
+                label: t("sort.newest"),
+                icon: "arrow-down-outline",
+            },
+            {
+                value: "oldest",
+                label: t("sort.oldest"),
+                icon: "arrow-up-outline",
+            },
+            {
+                value: "alpha",
+                label: t("sort.alphabetical"),
+                icon: "text-outline",
+            },
+        ],
+        [t],
+    );
+
     const sortedMeals = useMemo(() => {
         return [...meals].sort((a, b) => {
-            if (sortOrder === "desc") {
-                return b.time.localeCompare(a.time);
-            } else {
+            if (sortOrder === "alpha") {
+                return a.mealText.localeCompare(b.mealText);
+            }
+
+            if (sortOrder === "oldest") {
                 return a.time.localeCompare(b.time);
             }
+
+            return b.time.localeCompare(a.time);
         });
     }, [meals, sortOrder]);
 
@@ -128,16 +156,9 @@ export function DayView({
         [handlePrevDay, handleNextDay],
     );
 
-    const toggleSort = () => {
-        setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"));
-    };
-
     const renderMeal = ({ item }: { item: Meal }) => (
-        <TouchableOpacity
-            onPress={onMealPress ? () => onMealPress(item) : undefined}
-            activeOpacity={onMealPress ? 0.7 : 1}
+        <View
             testID={`meal-card-${item.id}`}
-            accessibilityLabel={item.mealText}
             style={[
                 styles.mealCard,
                 {
@@ -147,60 +168,68 @@ export function DayView({
                 },
             ]}
         >
-            <View style={styles.mealHeader}>
-                <Text
-                    style={{
-                        color: colors.primary,
-                        fontSize: typography.fontSize.xs,
-                        fontWeight: typography.fontWeight.bold,
-                    }}
-                >
-                    {t(`mealTypes.${item.mealType}`, {
-                        defaultValue: item.mealType,
-                    }).toUpperCase()}
-                </Text>
-                <Text
-                    style={{
-                        color: colors.textSecondary,
-                        fontSize: typography.fontSize.xs,
-                    }}
-                >
-                    {item.time}
-                </Text>
-            </View>
-            <Text
-                style={{
-                    color: colors.textPrimary,
-                    fontSize: typography.fontSize.md,
-                }}
+            {/* Tappable main body */}
+            <TouchableOpacity
+                onPress={onMealPress ? () => onMealPress(item) : undefined}
+                activeOpacity={onMealPress ? 0.7 : 1}
+                accessibilityLabel={item.mealText}
+                style={styles.mealBody}
             >
-                {item.mealText}
-            </Text>
-            {item.calories ? (
+                <View style={styles.mealHeader}>
+                    <Text
+                        style={{
+                            color: colors.primary,
+                            fontSize: typography.fontSize.xs,
+                            fontWeight: typography.fontWeight.bold,
+                        }}
+                    >
+                        {t(`mealTypes.${item.mealType}`, {
+                            defaultValue: item.mealType,
+                        }).toUpperCase()}
+                    </Text>
+                    <Text
+                        style={{
+                            color: colors.textSecondary,
+                            fontSize: typography.fontSize.xs,
+                        }}
+                    >
+                        {item.time}
+                    </Text>
+                </View>
                 <Text
                     style={{
-                        color: colors.secondary,
+                        color: colors.textPrimary,
                         fontSize: typography.fontSize.md,
-                        marginTop: spacing.xs,
-                        fontWeight: typography.fontWeight.bold,
                     }}
                 >
-                    {item.calories} kcal
+                    {item.mealText}
                 </Text>
-            ) : null}
-            {item.aiAnalysis ? (
-                <Text
-                    style={{
-                        color: colors.textSecondary,
-                        fontSize: typography.fontSize.xs,
-                        marginTop: spacing.xs,
-                        fontStyle: "italic",
-                    }}
-                >
-                    {item.aiAnalysis}
-                </Text>
-            ) : null}
-        </TouchableOpacity>
+                {item.calories ? (
+                    <Text
+                        style={{
+                            color: colors.secondary,
+                            fontSize: typography.fontSize.md,
+                            marginTop: spacing.xs,
+                            fontWeight: typography.fontWeight.bold,
+                        }}
+                    >
+                        {item.calories} kcal
+                    </Text>
+                ) : null}
+                {item.aiAnalysis ? (
+                    <Text
+                        style={{
+                            color: colors.textSecondary,
+                            fontSize: typography.fontSize.xs,
+                            marginTop: spacing.xs,
+                            fontStyle: "italic",
+                        }}
+                    >
+                        {item.aiAnalysis}
+                    </Text>
+                ) : null}
+            </TouchableOpacity>
+        </View>
     );
 
     const renderEmpty = () => (
@@ -452,31 +481,12 @@ export function DayView({
                         { paddingHorizontal: spacing.md },
                     ]}
                 >
-                    <TouchableOpacity
-                        onPress={toggleSort}
-                        style={styles.sortButton}
-                    >
-                        <Ionicons
-                            name={
-                                sortOrder === "desc"
-                                    ? "arrow-down-outline"
-                                    : "arrow-up-outline"
-                            }
-                            size={16}
-                            color={colors.primary}
-                        />
-                        <Text
-                            style={{
-                                color: colors.primary,
-                                fontSize: typography.fontSize.xs,
-                                marginLeft: spacing.xs,
-                            }}
-                        >
-                            {sortOrder === "desc"
-                                ? t("dayView.sort_newest")
-                                : t("dayView.sort_oldest")}
-                        </Text>
-                    </TouchableOpacity>
+                    <SortCycleButton
+                        testID="dayview-sort-toggle"
+                        value={sortOrder}
+                        options={sortOptions}
+                        onChange={setSortOrder}
+                    />
                 </View>
             )}
 
@@ -558,19 +568,18 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         marginBottom: 8,
     },
-    sortButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 4,
-        paddingHorizontal: 8,
-    },
     listContent: {
         flexGrow: 1,
     },
     mealCard: {
-        padding: 16,
         marginBottom: 12,
         borderWidth: 1,
+        flexDirection: "row",
+        alignItems: "stretch",
+    },
+    mealBody: {
+        flex: 1,
+        padding: 16,
     },
     mealHeader: {
         flexDirection: "row",

@@ -42,7 +42,11 @@
     "kcal_sum": "Suma kalorii",
     "kcal_goal": "Cel: {{goal}} kcal",
     "streak": "{{count}} dzień z rzędu",
-    "streak_plural": "{{count}} dni z rzędu"
+    "streak_plural": "{{count}} dni z rzędu",
+    "delete_confirm_title": "Usuń posiłek",
+    "delete_confirm_message": "Na pewno chcesz usunąć ten posiłek?",
+    "delete_confirm_ok": "Usuń",
+    "delete_confirm_cancel": "Anuluj"
   },
   "today": {
     "quick_entry_open": "Otwórz szybki wpis posiłku"
@@ -64,13 +68,59 @@
     "btn_collapse": "Zwiń",
     "btn_save": "Zapisz posiłek",
     "btn_saving": "Zapisywanie…",
+    "btn_delete": "Usuń posiłek",
     "btn_cancel": "Anuluj",
     "btn_from_favorites": "Z ulubionych",
     "favorites_picker_title": "Wybierz ulubiony",
     "favorites_picker_empty": "Brak ulubionych.",
     "favorites_picker_section_templates": "Szablony",
     "favorites_picker_section_starred": "Oznaczone gwiazdką",
+    "delete_confirm_title": "Usuń posiłek",
+    "delete_confirm_message": "Na pewno chcesz usunąć ten posiłek?",
+    "delete_confirm_ok": "Usuń",
+    "delete_confirm_cancel": "Anuluj",
     "validation_required": "Opis posiłku jest wymagany.",
-    "save_error": "Nie udało się zapisać posiłku."
+    "save_error": "Nie udało się zapisać posiłku.",
+    "delete_error": "Nie udało się usunąć posiłku."
+  },
+  "favorites": {
+    "tab_templates": "Szablony",
+    "tab_starred": "Oznaczone gwiazdką",
+    "templates_empty_title": "Brak szablonów",
+    "templates_empty_subtitle": "Dodaj swój pierwszy szablon!",
+    "starred_empty_title": "Brak oznaczonych wpisów",
+    "starred_empty_subtitle": "Oznacz wpisy gwiazdką w dzienniku.",
+    "btn_add": "Dodaj szablon",
+    "btn_use": "Użyj",
+    "btn_edit": "Edytuj",
+    "btn_delete": "Usuń",
+    "btn_unstar": "Odpnij",
+    "template_form_title_add": "Nowy szablon",
+    "template_form_title_edit": "Edytuj szablon",
+    "field_name": "Nazwa",
+    "field_meal_text": "Posiłek",
+    "field_calories": "Kalorie (opcjonalnie)",
+    "placeholder_name": "np. Owsianka z owocami",
+    "placeholder_meal_text": "Co zawiera ten posiłek?",
+    "placeholder_calories": "np. 300",
+    "btn_save": "Zapisz",
+    "btn_cancel": "Anuluj",
+    "validation_name_required": "Nazwa jest wymagana.",
+    "validation_meal_text_required": "Opis posiłku jest wymagany.",
+    "delete_confirm_title": "Usuń szablon",
+    "delete_confirm_message": "Na pewno chcesz usunąć ten szablon?",
+    "delete_confirm_ok": "Usuń",
+    "delete_confirm_cancel": "Anuluj",
+    "use_success_title": "Dodano!",
+    "use_success_message": "Posiłek został dodany do dziennika.",
+    "use_error": "Nie udało się dodać posiłku.",
+    "save_error": "Nie udało się zapisać szablonu.",
+    "sort_by_name": "A–Z",
+    "sort_by_date": "Najnowsze"
+  },
+  "sort": {
+    "newest": "Od najnowszego",
+    "oldest": "Od najstarszego",
+    "alphabetical": "A-Z"
   }
 }
