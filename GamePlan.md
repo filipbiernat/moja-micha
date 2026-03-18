@@ -223,11 +223,11 @@ moja-micha/
 
 ### 11. Ekran: Ustawienia
 
-- [ ] Motyw: Ciemny / Jasny / Z systemu
-- [ ] Język: Polski / Angielski / Z systemu
-- [ ] Dzienny cel kalorii (pole numeryczne, możliwość wyłączenia)
-- [ ] Zapis ustawień do SQLite
-- [ ] Natychmiastowe zastosowanie zmiany motywu i języka
+- [x] Motyw: Ciemny / Jasny / Z systemu
+- [x] Język: Polski / Angielski / Z systemu
+- [x] Dzienny cel kalorii (pole numeryczne, możliwość wyłączenia)
+- [x] Zapis ustawień do SQLite
+- [x] Natychmiastowe zastosowanie zmiany motywu i języka
 
 ### 12. Ostatnie posiłki
 

@@ -23,7 +23,11 @@
     "lang_pl": "Polski",
     "lang_en": "English",
     "lang_system": "System",
-    "more_settings_info": "More settings will appear in future versions."
+    "more_settings_info": "More settings will appear in future versions.",
+    "calorie_goal_section": "DAILY CALORIE GOAL",
+    "calorie_goal_label": "Enable calorie goal",
+    "calorie_goal_placeholder": "e.g. 2000",
+    "calorie_goal_unit": "kcal"
   },
   "mealTypes": {
     "breakfast": "Breakfast",
