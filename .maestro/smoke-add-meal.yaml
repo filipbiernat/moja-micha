@@ -3,7 +3,7 @@ appId: com.anonymous.mojamicha
 ---
 - launchApp
 - tapOn:
-      id: "today-quick-entry-fab"
+      id: "journal-quick-entry-fab"
 - assertVisible:
       id: "meal-form-quick-favorites-btn"
 - tapOn:

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
 import {
+    ActivityIndicator,
     ScrollView,
     StyleSheet,
     Text,
@@ -301,21 +302,28 @@ export default function StatsScreen(): React.ReactElement {
     >([]);
     const [currentStreak, setCurrentStreak] = useState(0);
     const [recordStreak, setRecordStreak] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
 
     const loadData = useCallback(
         (activePeriod: Period) => {
-            const days = activePeriod === "7d" ? 7 : 30;
-            const today = getLocalToday();
-            const startD = new Date();
-            startD.setDate(startD.getDate() - (days - 1));
-            const sy = startD.getFullYear();
-            const sm = String(startD.getMonth() + 1).padStart(2, "0");
-            const sd = String(startD.getDate()).padStart(2, "0");
-            const startDate = `${sy}-${sm}-${sd}`;
+            try {
+                const days = activePeriod === "7d" ? 7 : 30;
+                const today = getLocalToday();
+                const startD = new Date();
+                startD.setDate(startD.getDate() - (days - 1));
+                const sy = startD.getFullYear();
+                const sm = String(startD.getMonth() + 1).padStart(2, "0");
+                const sd = String(startD.getDate()).padStart(2, "0");
+                const startDate = `${sy}-${sm}-${sd}`;
 
-            setRawSummary(getCalorieSummary(db, startDate, today));
-            setCurrentStreak(getStreak(db));
-            setRecordStreak(getRecordStreak(db));
+                setRawSummary(getCalorieSummary(db, startDate, today));
+                setCurrentStreak(getStreak(db));
+                setRecordStreak(getRecordStreak(db));
+            } catch (error) {
+                console.error("StatsScreen: failed to load data", error);
+            } finally {
+                setIsLoading(false);
+            }
         },
         [db],
     );
@@ -372,6 +380,14 @@ export default function StatsScreen(): React.ReactElement {
     const styles = makeStyles(colors);
     const chartAvailableWidth = screenWidth - spacing.lg * 2;
 
+    if (isLoading) {
+        return (
+            <View style={[styles.container, styles.loadingContainer]}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    }
+
     return (
         <ScrollView
             style={styles.container}
@@ -392,6 +408,7 @@ export default function StatsScreen(): React.ReactElement {
                         ]}
                         onPress={() => handlePeriodChange(p)}
                         accessibilityRole="button"
+                        accessibilityLabel={t(`stats.period_${p}` as const)}
                         accessibilityState={{ selected: period === p }}
                         testID={`stats-period-${p}`}
                     >
@@ -492,6 +509,10 @@ function makeStyles(colors: ColorTokens) {
         container: {
             flex: 1,
             backgroundColor: colors.background,
+        },
+        loadingContainer: {
+            alignItems: "center",
+            justifyContent: "center",
         },
         content: {
             paddingHorizontal: spacing.lg,

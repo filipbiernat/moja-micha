@@ -4,6 +4,7 @@ import { drizzle, type ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
 import migrations from '../drizzle/migrations';
+import i18n from '../i18n';
 
 // ─── Database instance (singleton) ───────────────────────────
 
@@ -28,7 +29,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
     if (error) {
         return (
             <View style={styles.container}>
-                <Text style={styles.errorText}>⚠️ Database Error</Text>
+                <Text style={styles.errorText}>{i18n.t('db.error_title')}</Text>
                 <Text style={styles.errorDetail}>{error.message}</Text>
             </View>
         );
@@ -38,7 +39,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
         return (
             <View style={styles.container}>
                 <ActivityIndicator size="large" color="#00E5FF" />
-                <Text style={styles.loadingText}>Przygotowywanie bazy danych...</Text>
+                <Text style={styles.loadingText}>{i18n.t('db.loading_text')}</Text>
             </View>
         );
     }

@@ -241,12 +241,12 @@ moja-micha/
 
 ### 14. Jakość i dobre praktyki
 
-- [ ] TypeScript – typowanie wszystkich danych i propsów
-- [ ] Obsługa błędów bazy danych
-- [ ] Loading states (skeleton / spinner)
-- [ ] Responsywność (różne rozmiary ekranów Android)
-- [ ] Dostępność (accessibilityLabel na przyciskach)
-- [ ] Brak hardcoded strings (wszystko przez i18n)
+- [x] TypeScript – typowanie wszystkich danych i propsów
+- [x] Obsługa błędów bazy danych
+- [x] Loading states (skeleton / spinner)
+- [x] Responsywność (różne rozmiary ekranów Android)
+- [x] Dostępność (accessibilityLabel na przyciskach)
+- [x] Brak hardcoded strings (wszystko przez i18n)
 
 ---
 

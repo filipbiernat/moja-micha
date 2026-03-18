@@ -104,3 +104,11 @@ Context: TemplateFormSheet / MealFormSheet on screens with bottom tab navigation
 Problem: A `BottomSheet` can render its last CTA partially behind the bottom tab bar when the sheet content relies only on static bottom padding. Adding `bottomInset` directly on the sheet can overcorrect and create a visible external gap above the tab bar.
 Solution: Keep the sheet attached to the bottom edge and mirror `MealFormSheet`: add `useSafeAreaInsets()` only to the fixed footer padding. This keeps the CTA above the tab bar without creating a detached bottom gap.
 Discovered By: Ninja agent
+
+### 2026-03-18 — Keep Maestro selectors aligned with renamed navigation testIDs
+
+Task: TASK-014
+Context: Emulator smoke tests after the Today screen was merged into Journal
+Problem: Existing Maestro flows still targeted the old `today-quick-entry-fab` testID, so automated emulator validation failed even though the UI worked correctly.
+Solution: Whenever a screen or navigation concept is renamed, update `.maestro/*.yaml` selectors in the same task. Smoke tests should reference current testIDs such as `journal-quick-entry-fab`.
+Discovered By: Ninja agent

@@ -300,6 +300,7 @@ export default function JournalScreen() {
                 onPress={openYearPicker}
                 style={styles.calendarHeaderTitle}
                 testID="journal-calendar-month-header"
+                accessibilityLabel={formatMonthYear(visibleMonthKey, lang)}
             >
                 <Text
                     style={{
@@ -329,6 +330,7 @@ export default function JournalScreen() {
             <TouchableOpacity
                 key={year}
                 onPress={() => handleYearSelect(year)}
+                accessibilityLabel={t("journal.picker_select_year", { year })}
                 style={[
                     styles.pickerCell,
                     isSelected && {
@@ -364,6 +366,7 @@ export default function JournalScreen() {
             <TouchableOpacity
                 key={item.index}
                 onPress={() => handleMonthSelect(item.index)}
+                accessibilityLabel={t("journal.picker_select_month", { month: item.label })}
                 style={[
                     styles.pickerCell,
                     isSelected && {
@@ -510,6 +513,7 @@ export default function JournalScreen() {
                                             onPress={() =>
                                                 setPickerMode("year")
                                             }
+                                            accessibilityLabel={t("journal.picker_back_year")}
                                             style={styles.pickerBackBtn}
                                         >
                                             <Ionicons
@@ -531,7 +535,10 @@ export default function JournalScreen() {
                                     ) : (
                                         <View style={styles.pickerBackBtn} />
                                     )}
-                                    <TouchableOpacity onPress={closePicker}>
+                                    <TouchableOpacity
+                                        onPress={closePicker}
+                                        accessibilityLabel={t("journal.picker_close")}
+                                    >
                                         <Ionicons
                                             name="close"
                                             size={22}

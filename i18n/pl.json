@@ -1,4 +1,12 @@
 {
+  "common": {
+    "kcal_unit": "kcal",
+    "loading": "Wczytywanie\u2026"
+  },
+  "db": {
+    "loading_text": "Przygotowywanie bazy danych\u2026",
+    "error_title": "\u26a0\ufe0f B\u0142\u0105d bazy danych"
+  },
   "tabs": {
     "journal": "Dziennik",
     "today": "Dziś",
@@ -39,6 +47,8 @@
   },
   "dayView": {
     "toggle_calendar": "Przełącz widok kalendarza",
+    "btn_prev_day": "Poprzedni dzień",
+    "btn_next_day": "Następny dzień",
     "empty_state_title": "Brak posiłków",
     "empty_state_subtitle": "Dodaj swój pierwszy posiłek w tym dniu!",
     "sort_newest": "Od najnowszego",
@@ -56,6 +66,12 @@
   },
   "today": {
     "quick_entry_open": "Otwórz szybki wpis posiłku"
+  },
+  "journal": {
+    "picker_close": "Zamknij selektor",
+    "picker_back_year": "Powrót do wyboru roku",
+    "picker_select_year": "Wybierz rok {{year}}",
+    "picker_select_month": "Wybierz miesiąc {{month}}"
   },
   "mealForm": {
     "title_quick": "Szybki wpis",

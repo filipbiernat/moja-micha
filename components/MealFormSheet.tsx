@@ -1146,6 +1146,7 @@ export const MealFormSheet = forwardRef<
                     style={styles.modalBackdrop}
                     activeOpacity={1}
                     onPress={() => setShowFavoritesPicker(false)}
+                    accessibilityLabel={t("mealForm.btn_cancel")}
                 />
                 <View
                     style={[
@@ -1236,6 +1237,7 @@ export const MealFormSheet = forwardRef<
                                     onPress={() => handlePickFavorite(item)}
                                     activeOpacity={0.7}
                                     testID={`favorites-picker-item-${item.id}`}
+                                    accessibilityLabel={item.name}
                                 >
                                     <View style={styles.favoriteRowLeft}>
                                         <Ionicons
@@ -1291,7 +1293,7 @@ export const MealFormSheet = forwardRef<
                                                 marginLeft: spacing.sm,
                                             }}
                                         >
-                                            {item.calories} kcal
+                                            {item.calories} {t("common.kcal_unit")}
                                         </Text>
                                     )}
                                 </TouchableOpacity>

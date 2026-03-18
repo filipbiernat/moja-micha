@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
+    ActivityIndicator,
     Alert,
     FlatList,
     StyleSheet,
@@ -45,6 +46,7 @@ export default function FavoritesScreen() {
     const [starredItems, setStarredItems] = useState<Favorite[]>([]);
     const [templateSort, setTemplateSort] =
         useState<TemplateSortOrder>("newest");
+    const [isLoading, setIsLoading] = useState(true);
 
     const sortOptions = useMemo<
         ReadonlyArray<SortCycleOption<TemplateSortOrder>>
@@ -90,8 +92,14 @@ export default function FavoritesScreen() {
     // ── Data loading ─────────────────────────────────────────────────────────
 
     const loadData = useCallback(() => {
-        setTemplates(getFavoritesByType(db, "template"));
-        setStarredItems(getFavoritesByType(db, "starred"));
+        try {
+            setTemplates(getFavoritesByType(db, "template"));
+            setStarredItems(getFavoritesByType(db, "starred"));
+        } catch (error) {
+            console.error("Failed to load favorites:", error);
+        } finally {
+            setIsLoading(false);
+        }
     }, [db]);
 
     useFocusEffect(
@@ -225,7 +233,7 @@ export default function FavoritesScreen() {
                                 },
                             ]}
                         >
-                            {item.calories} kcal
+                            {item.calories} {t("common.kcal_unit")}
                         </Text>
                     )}
                 </TouchableOpacity>
@@ -322,7 +330,7 @@ export default function FavoritesScreen() {
                                 },
                             ]}
                         >
-                            {item.calories} kcal
+                            {item.calories} {t("common.kcal_unit")}
                         </Text>
                     )}
                 </TouchableOpacity>
@@ -406,6 +414,19 @@ export default function FavoritesScreen() {
     );
 
     // ── Render ───────────────────────────────────────────────────────────────
+
+    if (isLoading) {
+        return (
+            <SafeAreaView
+                style={[styles.container, { backgroundColor: colors.background }]}
+                edges={["top"]}
+            >
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <>
@@ -669,6 +690,11 @@ const styles = StyleSheet.create({
         position: "absolute",
         width: 56,
         height: 56,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    loadingContainer: {
+        flex: 1,
         alignItems: "center",
         justifyContent: "center",
     },

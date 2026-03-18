@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
+    ActivityIndicator,
     View,
     Text,
     StyleSheet,
@@ -47,6 +48,7 @@ export function DayView({
     const [sortOrder, setSortOrder] = useState<MealSortOrder>("newest");
     const [calorieGoal, setCalorieGoal] = useState<number | null>(null);
     const [streak, setStreak] = useState<number>(0);
+    const [isLoading, setIsLoading] = useState(true);
 
     const loadData = useCallback(() => {
         try {
@@ -65,6 +67,8 @@ export function DayView({
             setStreak(currentStreak);
         } catch (error) {
             console.error("Failed to load date info:", error);
+        } finally {
+            setIsLoading(false);
         }
     }, [db, date]);
 
@@ -233,7 +237,7 @@ export function DayView({
                             fontWeight: typography.fontWeight.bold,
                         }}
                     >
-                        {item.calories} kcal
+                        {item.calories} {t("common.kcal_unit")}
                     </Text>
                 ) : null}
                 {item.aiAnalysis ? (
@@ -304,6 +308,14 @@ export function DayView({
             ? t("dayView.streak", { count: streak })
             : t("dayView.streak_plural", { count: streak });
 
+    if (isLoading) {
+        return (
+            <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    }
+
     return (
         <View
             style={[styles.container, { backgroundColor: colors.background }]}
@@ -315,6 +327,7 @@ export function DayView({
                     <TouchableOpacity
                         onPress={handlePrevDay}
                         style={styles.navButton}
+                        accessibilityLabel={t("dayView.btn_prev_day")}
                     >
                         <Ionicons
                             name="chevron-back"
@@ -426,6 +439,7 @@ export function DayView({
                     <TouchableOpacity
                         onPress={handleNextDay}
                         style={styles.navButton}
+                        accessibilityLabel={t("dayView.btn_next_day")}
                     >
                         <Ionicons
                             name="chevron-forward"
