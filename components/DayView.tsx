@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useDatabase } from "../db/DatabaseProvider";
-import { getMealsByDate, getStreak } from "../db/meals";
+import { getMealsByDate, getStreak, setMealStarred } from "../db/meals";
+import { toggleStarredMeal } from "../db/favorites";
 import type { Meal } from "../db/schema";
 import { getSetting } from "../db/settings";
 import { SETTING_KEYS } from "../db/schema";
@@ -115,6 +116,25 @@ export function DayView({
         if (parts.length !== 3) return dateString;
         return `${parts[2]}.${parts[1]}.${parts[0]}`;
     };
+
+    const handleStarToggle = useCallback(
+        (meal: Meal) => {
+            try {
+                const newStarred = toggleStarredMeal(
+                    db,
+                    meal.id,
+                    meal.mealText, // name (Meal has no separate name field)
+                    meal.mealText,
+                    meal.calories,
+                );
+                setMealStarred(db, meal.id, newStarred);
+                loadData();
+            } catch (error) {
+                console.error("Failed to toggle star:", error);
+            }
+        },
+        [db, loadData],
+    );
 
     const handlePrevDay = useCallback(() => {
         if (!onDateChange) return;
@@ -228,6 +248,19 @@ export function DayView({
                         {item.aiAnalysis}
                     </Text>
                 ) : null}
+            </TouchableOpacity>
+            {/* Star button */}
+            <TouchableOpacity
+                testID={`meal-star-btn-${item.id}`}
+                accessibilityLabel={item.isStarred === 1 ? t("dayView.btn_unstar") : t("dayView.btn_star")}
+                onPress={() => handleStarToggle(item)}
+                style={styles.starBtn}
+            >
+                <Ionicons
+                    name={item.isStarred === 1 ? "star" : "star-outline"}
+                    size={20}
+                    color={item.isStarred === 1 ? colors.star : colors.textMuted}
+                />
             </TouchableOpacity>
         </View>
     );
@@ -580,6 +613,12 @@ const styles = StyleSheet.create({
     mealBody: {
         flex: 1,
         padding: 16,
+    },
+    starBtn: {
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 12,
+        paddingVertical: 8,
     },
     mealHeader: {
         flexDirection: "row",

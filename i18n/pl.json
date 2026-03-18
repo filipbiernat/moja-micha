@@ -50,7 +50,9 @@
     "delete_confirm_title": "Usuń posiłek",
     "delete_confirm_message": "Na pewno chcesz usunąć ten posiłek?",
     "delete_confirm_ok": "Usuń",
-    "delete_confirm_cancel": "Anuluj"
+    "delete_confirm_cancel": "Anuluj",
+    "btn_star": "Oznacz gwiazdką",
+    "btn_unstar": "Usuń gwiazdkę"
   },
   "today": {
     "quick_entry_open": "Otwórz szybki wpis posiłku"

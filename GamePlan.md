@@ -231,13 +231,13 @@ moja-micha/
 
 ### 12. Ostatnie posiłki
 
-- [ ] Automatyczna lista N ostatnich unikalnych wpisów pola „Posiłek"
-- [ ] Dostępna z formularza jako podpowiedź / autocomplete
+- [x] Automatyczna lista N ostatnich unikalnych wpisów pola „Posiłek"
+- [x] Dostępna z formularza jako podpowiedź / autocomplete
 
 ### 13. Oznaczanie gwiazdką
 
-- [ ] Przycisk ⭐ przy każdym posiłku na liście
-- [ ] Togglowanie ulubionych (dodaj/usuń ze strony ulubionych)
+- [x] Przycisk ⭐ przy każdym posiłku na liście
+- [x] Togglowanie ulubionych (dodaj/usuń ze strony ulubionych)
 
 ### 14. Jakość i dobre praktyki
 
