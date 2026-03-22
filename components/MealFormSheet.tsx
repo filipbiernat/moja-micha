@@ -28,7 +28,12 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDatabase } from "../db/DatabaseProvider";
 import { getFavoritesByType } from "../db/favorites";
-import { createMeal, deleteMeal, getRecentUniqueMeals, updateMeal } from "../db/meals";
+import {
+    createMeal,
+    deleteMeal,
+    getRecentUniqueMeals,
+    updateMeal,
+} from "../db/meals";
 import type { Favorite, Meal, MealType } from "../db/schema";
 import { SETTING_KEYS } from "../db/schema";
 import { getSetting } from "../db/settings";
@@ -111,9 +116,7 @@ export const MealFormSheet = forwardRef<
     const filteredSuggestions = useMemo(() => {
         const query = mealText.trim().toLowerCase();
         if (!query) return recentSuggestions;
-        return recentSuggestions.filter((s) =>
-            s.toLowerCase().includes(query),
-        );
+        return recentSuggestions.filter((s) => s.toLowerCase().includes(query));
     }, [recentSuggestions, mealText]);
     // ── Reset helper ─────────────────────────────────────────────────────────
 
@@ -306,7 +309,10 @@ export const MealFormSheet = forwardRef<
         })();
         const model = (() => {
             try {
-                return getSetting(db, SETTING_KEYS.OPENAI_MODEL) ?? DEFAULT_OPENAI_MODEL;
+                return (
+                    getSetting(db, SETTING_KEYS.OPENAI_MODEL) ??
+                    DEFAULT_OPENAI_MODEL
+                );
             } catch {
                 return DEFAULT_OPENAI_MODEL;
             }
@@ -330,7 +336,10 @@ export const MealFormSheet = forwardRef<
 
         analyzeMeal(apiKey!, trimmed, i18n.language ?? "en", model)
             .then((result) => {
-                const patch: { calories?: number | null; aiAnalysis?: string | null } = {};
+                const patch: {
+                    calories?: number | null;
+                    aiAnalysis?: string | null;
+                } = {};
                 if (savedCalories === null && result.calories !== null) {
                     patch.calories = result.calories;
                 }
@@ -790,7 +799,9 @@ export const MealFormSheet = forwardRef<
                                             key={s}
                                             testID={`meal-form-suggestion-chip-${s}`}
                                             accessibilityLabel={s}
-                                            onPress={() => handlePickSuggestion(s)}
+                                            onPress={() =>
+                                                handlePickSuggestion(s)
+                                            }
                                             style={{
                                                 backgroundColor: colors.surface,
                                                 borderColor: colors.border,
@@ -805,7 +816,8 @@ export const MealFormSheet = forwardRef<
                                                 numberOfLines={1}
                                                 style={{
                                                     color: colors.textSecondary,
-                                                    fontSize: typography.fontSize.sm,
+                                                    fontSize:
+                                                        typography.fontSize.sm,
                                                 }}
                                             >
                                                 {s}
@@ -955,9 +967,10 @@ export const MealFormSheet = forwardRef<
                                 style={[
                                     styles.saveBtn,
                                     {
-                                        backgroundColor: (isSaving || isAnalyzing)
-                                            ? colors.primaryMuted
-                                            : colors.primary,
+                                        backgroundColor:
+                                            isSaving || isAnalyzing
+                                                ? colors.primaryMuted
+                                                : colors.primary,
                                         borderRadius: borderRadius.md,
                                         paddingVertical: spacing.md,
                                     },
@@ -978,8 +991,8 @@ export const MealFormSheet = forwardRef<
                                     {isSaving
                                         ? t("mealForm.btn_saving")
                                         : isAnalyzing
-                                        ? t("mealForm.analyzing")
-                                        : t("mealForm.btn_save")}
+                                          ? t("mealForm.analyzing")
+                                          : t("mealForm.btn_save")}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -1085,7 +1098,8 @@ export const MealFormSheet = forwardRef<
                                             numberOfLines={1}
                                             style={{
                                                 color: colors.textSecondary,
-                                                fontSize: typography.fontSize.sm,
+                                                fontSize:
+                                                    typography.fontSize.sm,
                                             }}
                                         >
                                             {s}
@@ -1184,9 +1198,10 @@ export const MealFormSheet = forwardRef<
                                 style={[
                                     styles.quickSaveBtn,
                                     {
-                                        backgroundColor: (isSaving || isAnalyzing)
-                                            ? colors.primaryMuted
-                                            : colors.primary,
+                                        backgroundColor:
+                                            isSaving || isAnalyzing
+                                                ? colors.primaryMuted
+                                                : colors.primary,
                                         borderRadius: borderRadius.md,
                                         paddingVertical: spacing.md,
                                     },
@@ -1207,8 +1222,8 @@ export const MealFormSheet = forwardRef<
                                     {isSaving
                                         ? t("mealForm.btn_saving")
                                         : isAnalyzing
-                                        ? t("mealForm.analyzing")
-                                        : t("mealForm.btn_save")}
+                                          ? t("mealForm.analyzing")
+                                          : t("mealForm.btn_save")}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -1375,7 +1390,8 @@ export const MealFormSheet = forwardRef<
                                                 marginLeft: spacing.sm,
                                             }}
                                         >
-                                            {item.calories} {t("common.kcal_unit")}
+                                            {item.calories}{" "}
+                                            {t("common.kcal_unit")}
                                         </Text>
                                     )}
                                 </TouchableOpacity>

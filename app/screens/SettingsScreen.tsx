@@ -21,12 +21,12 @@ import { SETTING_KEYS } from "../../db/schema";
 import { DEFAULT_OPENAI_MODEL } from "../../services/openai";
 
 const MODEL_OPTIONS = [
-    'gpt-4o-mini',
-    'gpt-4o',
-    'gpt-4.1',
-    'gpt-4.5',
-    'gpt-5',
-    'gpt-5.2',
+    "gpt-4o-mini",
+    "gpt-4o",
+    "gpt-4.1",
+    "gpt-4.5",
+    "gpt-5",
+    "gpt-5.2",
 ] as const;
 
 export default function SettingsScreen() {
@@ -134,7 +134,10 @@ export default function SettingsScreen() {
 
     const [selectedModel, setSelectedModel] = useState<string>(() => {
         try {
-            return getSetting(db, SETTING_KEYS.OPENAI_MODEL) ?? DEFAULT_OPENAI_MODEL;
+            return (
+                getSetting(db, SETTING_KEYS.OPENAI_MODEL) ??
+                DEFAULT_OPENAI_MODEL
+            );
         } catch {
             return DEFAULT_OPENAI_MODEL;
         }
@@ -206,10 +209,14 @@ export default function SettingsScreen() {
                                 <React.Fragment key={option.value}>
                                     <TouchableOpacity
                                         style={styles.optionRow}
-                                        onPress={() => setThemePref(option.value)}
+                                        onPress={() =>
+                                            setThemePref(option.value)
+                                        }
                                         accessibilityLabel={`${t("settings.theme_section")}: ${option.label}`}
                                         accessibilityRole="radio"
-                                        accessibilityState={{ checked: isActive }}
+                                        accessibilityState={{
+                                            checked: isActive,
+                                        }}
                                     >
                                         <Text style={styles.optionEmoji}>
                                             {option.emoji}
@@ -218,7 +225,9 @@ export default function SettingsScreen() {
                                             {option.label}
                                         </Text>
                                         {isActive && (
-                                            <View style={styles.activeIndicator} />
+                                            <View
+                                                style={styles.activeIndicator}
+                                            />
                                         )}
                                     </TouchableOpacity>
                                     {!isLast && <View style={styles.divider} />}
@@ -242,10 +251,14 @@ export default function SettingsScreen() {
                                 <React.Fragment key={option.value}>
                                     <TouchableOpacity
                                         style={styles.optionRow}
-                                        onPress={() => setLangPref(option.value)}
+                                        onPress={() =>
+                                            setLangPref(option.value)
+                                        }
                                         accessibilityLabel={`${t("settings.lang_section")}: ${option.label}`}
                                         accessibilityRole="radio"
-                                        accessibilityState={{ checked: isActive }}
+                                        accessibilityState={{
+                                            checked: isActive,
+                                        }}
                                     >
                                         <Text style={styles.optionEmoji}>
                                             {option.emoji}
@@ -254,7 +267,9 @@ export default function SettingsScreen() {
                                             {option.label}
                                         </Text>
                                         {isActive && (
-                                            <View style={styles.activeIndicator} />
+                                            <View
+                                                style={styles.activeIndicator}
+                                            />
                                         )}
                                     </TouchableOpacity>
                                     {!isLast && <View style={styles.divider} />}
@@ -306,7 +321,9 @@ export default function SettingsScreen() {
                                             handleGoalCommit(goalText);
                                             Keyboard.dismiss();
                                         }}
-                                        onBlur={() => handleGoalCommit(goalText)}
+                                        onBlur={() =>
+                                            handleGoalCommit(goalText)
+                                        }
                                         keyboardType="numeric"
                                         returnKeyType="done"
                                         placeholder={t(
@@ -347,7 +364,9 @@ export default function SettingsScreen() {
                                 autoCapitalize="none"
                                 autoCorrect={false}
                                 returnKeyType="done"
-                                placeholder={t("settings.openai_api_key_placeholder")}
+                                placeholder={t(
+                                    "settings.openai_api_key_placeholder",
+                                )}
                                 placeholderTextColor={theme.colors.textMuted}
                                 testID="settings-openai-api-key-input"
                             />
@@ -386,15 +405,12 @@ export default function SettingsScreen() {
                         </View>
                         {MODEL_OPTIONS.map((model, index) => {
                             const isActive = selectedModel === model;
-                            const isLast =
-                                index === MODEL_OPTIONS.length - 1;
+                            const isLast = index === MODEL_OPTIONS.length - 1;
                             return (
                                 <React.Fragment key={model}>
                                     <TouchableOpacity
                                         style={styles.optionRow}
-                                        onPress={() =>
-                                            handleModelSelect(model)
-                                        }
+                                        onPress={() => handleModelSelect(model)}
                                         accessibilityRole="radio"
                                         accessibilityState={{
                                             checked: isActive,
@@ -412,8 +428,7 @@ export default function SettingsScreen() {
                                                               .textPrimary,
                                                     fontWeight: isActive
                                                         ? theme.typography
-                                                              .fontWeight
-                                                              .bold
+                                                              .fontWeight.bold
                                                         : theme.typography
                                                               .fontWeight
                                                               .regular,
@@ -428,9 +443,7 @@ export default function SettingsScreen() {
                                             />
                                         )}
                                     </TouchableOpacity>
-                                    {!isLast && (
-                                        <View style={styles.divider} />
-                                    )}
+                                    {!isLast && <View style={styles.divider} />}
                                 </React.Fragment>
                             );
                         })}

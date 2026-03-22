@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import React, {
+    useState,
+    useEffect,
+    useMemo,
+    useCallback,
+    useRef,
+} from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -78,10 +84,16 @@ export function DayView({
             setStreak(currentStreak);
 
             const keyValue = getSetting(db, SETTING_KEYS.OPENAI_API_KEY);
-            setApiKey(keyValue && keyValue.trim() !== "" ? keyValue.trim() : null);
+            setApiKey(
+                keyValue && keyValue.trim() !== "" ? keyValue.trim() : null,
+            );
 
             const modelValue = getSetting(db, SETTING_KEYS.OPENAI_MODEL);
-            setModel(modelValue && modelValue.trim() !== "" ? modelValue.trim() : DEFAULT_OPENAI_MODEL);
+            setModel(
+                modelValue && modelValue.trim() !== ""
+                    ? modelValue.trim()
+                    : DEFAULT_OPENAI_MODEL,
+            );
         } catch (error) {
             console.error("Failed to load date info:", error);
         } finally {
@@ -163,7 +175,10 @@ export function DayView({
         const abortId = ++insightAbortRef.current;
         try {
             const mealsSummary = meals
-                .map((m) => `${m.mealText}${m.calories ? ` (${m.calories} kcal)` : ""}`)
+                .map(
+                    (m) =>
+                        `${m.mealText}${m.calories ? ` (${m.calories} kcal)` : ""}`,
+                )
                 .join(", ");
             const insight = await getDailyInsight(
                 apiKey,
@@ -305,14 +320,20 @@ export function DayView({
             {/* Star button */}
             <TouchableOpacity
                 testID={`meal-star-btn-${item.id}`}
-                accessibilityLabel={item.isStarred === 1 ? t("dayView.btn_unstar") : t("dayView.btn_star")}
+                accessibilityLabel={
+                    item.isStarred === 1
+                        ? t("dayView.btn_unstar")
+                        : t("dayView.btn_star")
+                }
                 onPress={() => handleStarToggle(item)}
                 style={styles.starBtn}
             >
                 <Ionicons
                     name={item.isStarred === 1 ? "star" : "star-outline"}
                     size={20}
-                    color={item.isStarred === 1 ? colors.star : colors.textMuted}
+                    color={
+                        item.isStarred === 1 ? colors.star : colors.textMuted
+                    }
                 />
             </TouchableOpacity>
         </View>
@@ -359,7 +380,12 @@ export function DayView({
 
     if (isLoading) {
         return (
-            <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+            <View
+                style={[
+                    styles.loadingContainer,
+                    { backgroundColor: colors.background },
+                ]}
+            >
                 <ActivityIndicator size="large" color={colors.primary} />
             </View>
         );
@@ -569,86 +595,95 @@ export function DayView({
                 ) : null}
 
                 {/* AI daily insight — today only */}
-                {apiKey && meals.length > 0 && date === getLocalDateString() && (
-                    <View style={{ marginTop: spacing.sm }}>
-                        {aiInsight ? (
-                            <View
-                                style={{
-                                    backgroundColor: colors.surfaceHighlight,
-                                    borderRadius: borderRadius.md,
-                                    padding: spacing.sm,
-                                    marginTop: spacing.xs,
-                                }}
-                            >
-                                <Text
+                {apiKey &&
+                    meals.length > 0 &&
+                    date === getLocalDateString() && (
+                        <View style={{ marginTop: spacing.sm }}>
+                            {aiInsight ? (
+                                <View
                                     style={{
-                                        color: colors.textPrimary,
-                                        fontSize: typography.fontSize.sm,
-                                        fontStyle: "italic",
+                                        backgroundColor:
+                                            colors.surfaceHighlight,
+                                        borderRadius: borderRadius.md,
+                                        padding: spacing.sm,
+                                        marginTop: spacing.xs,
                                     }}
                                 >
-                                    {aiInsight}
-                                </Text>
-                            </View>
-                        ) : (
-                            <TouchableOpacity
-                                onPress={handleAskAI}
-                                disabled={isLoadingInsight}
-                                testID="dayview-ai-insight-btn"
-                                accessibilityLabel={t("dayView.ai_insight_btn")}
-                                style={{
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    backgroundColor: colors.surface,
-                                    borderColor: colors.border,
-                                    borderWidth: 1,
-                                    borderRadius: borderRadius.md,
-                                    paddingVertical: spacing.sm,
-                                    paddingHorizontal: spacing.md,
-                                    marginTop: spacing.xs,
-                                    gap: spacing.xs,
-                                }}
-                            >
-                                {isLoadingInsight ? (
-                                    <>
-                                        <ActivityIndicator
-                                            size="small"
-                                            color={colors.primary}
-                                        />
-                                        <Text
-                                            style={{
-                                                color: colors.textSecondary,
-                                                fontSize: typography.fontSize.sm,
-                                            }}
-                                        >
-                                            {t("dayView.ai_insight_loading")}
-                                        </Text>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Ionicons
-                                            name="sparkles-outline"
-                                            size={14}
-                                            color={colors.primary}
-                                        />
-                                        <Text
-                                            style={{
-                                                color: colors.primary,
-                                                fontSize: typography.fontSize.sm,
-                                                fontWeight:
-                                                    typography.fontWeight
-                                                        .semiBold,
-                                            }}
-                                        >
-                                            {t("dayView.ai_insight_btn")}
-                                        </Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-                        )}
-                    </View>
-                )}
+                                    <Text
+                                        style={{
+                                            color: colors.textPrimary,
+                                            fontSize: typography.fontSize.sm,
+                                            fontStyle: "italic",
+                                        }}
+                                    >
+                                        {aiInsight}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={handleAskAI}
+                                    disabled={isLoadingInsight}
+                                    testID="dayview-ai-insight-btn"
+                                    accessibilityLabel={t(
+                                        "dayView.ai_insight_btn",
+                                    )}
+                                    style={{
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        backgroundColor: colors.surface,
+                                        borderColor: colors.border,
+                                        borderWidth: 1,
+                                        borderRadius: borderRadius.md,
+                                        paddingVertical: spacing.sm,
+                                        paddingHorizontal: spacing.md,
+                                        marginTop: spacing.xs,
+                                        gap: spacing.xs,
+                                    }}
+                                >
+                                    {isLoadingInsight ? (
+                                        <>
+                                            <ActivityIndicator
+                                                size="small"
+                                                color={colors.primary}
+                                            />
+                                            <Text
+                                                style={{
+                                                    color: colors.textSecondary,
+                                                    fontSize:
+                                                        typography.fontSize.sm,
+                                                }}
+                                            >
+                                                {t(
+                                                    "dayView.ai_insight_loading",
+                                                )}
+                                            </Text>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Ionicons
+                                                name="sparkles-outline"
+                                                size={14}
+                                                color={colors.primary}
+                                            />
+                                            <Text
+                                                style={{
+                                                    color: colors.primary,
+                                                    fontSize:
+                                                        typography.fontSize.sm,
+                                                    fontWeight:
+                                                        typography.fontWeight
+                                                            .semiBold,
+                                                }}
+                                            >
+                                                {t("dayView.ai_insight_btn")}
+                                            </Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    )}
             </View>
 
             {/* List Controls */}

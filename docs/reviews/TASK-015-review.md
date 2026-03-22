@@ -16,15 +16,15 @@ See full cycle-1 findings above this line in git history.
 
 ## Cycle-1 Issue Resolution
 
-| ID | Description | Status |
-|----|-------------|--------|
-| MAJOR #1 | DayView stale closure | **Partially fixed — new regression introduced (see below)** |
-| MAJOR #2 | DEFAULT_OPENAI_MODEL not imported in SettingsScreen | ✅ Resolved |
-| MINOR #1 | JSON.parse no try-catch | ✅ Resolved |
-| MINOR #2 | MODEL_OPTIONS recreated on every render | ✅ Resolved |
-| MINOR #3 | Orphaned i18n keys | ✅ Resolved |
-| MINOR #4 | AI enrichment in edit mode | ✅ Resolved |
-| MINOR #5 | isAnalyzing not reset on swipe-close | ✅ Resolved |
+| ID       | Description                                         | Status                                                      |
+| -------- | --------------------------------------------------- | ----------------------------------------------------------- |
+| MAJOR #1 | DayView stale closure                               | **Partially fixed — new regression introduced (see below)** |
+| MAJOR #2 | DEFAULT_OPENAI_MODEL not imported in SettingsScreen | ✅ Resolved                                                 |
+| MINOR #1 | JSON.parse no try-catch                             | ✅ Resolved                                                 |
+| MINOR #2 | MODEL_OPTIONS recreated on every render             | ✅ Resolved                                                 |
+| MINOR #3 | Orphaned i18n keys                                  | ✅ Resolved                                                 |
+| MINOR #4 | AI enrichment in edit mode                          | ✅ Resolved                                                 |
+| MINOR #5 | isAnalyzing not reset on swipe-close                | ✅ Resolved                                                 |
 
 ---
 
@@ -47,12 +47,12 @@ See full cycle-1 findings above this line in git history.
 
 ## Cycle-2 Issue Resolution
 
-| ID | Description | Status |
-|----|-------------|--------|
+| ID    | Description                           | Status                                                                                          |
+| ----- | ------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | MAJOR | `isLoadingInsight` stuck when aborted | ✅ Resolved — `loadData` calls `setIsLoadingInsight(false)` synchronously after bumping the ref |
-| MINOR | `getLocalDateString` dead import | ✅ Resolved — now used at line 572 guard `date === getLocalDateString()` |
-| MINOR | `Alert` dead import in SettingsScreen | ✅ Resolved — removed from import list |
-| MINOR | AI insight visible for past dates | ✅ Resolved — `date === getLocalDateString()` guard added |
+| MINOR | `getLocalDateString` dead import      | ✅ Resolved — now used at line 572 guard `date === getLocalDateString()`                        |
+| MINOR | `Alert` dead import in SettingsScreen | ✅ Resolved — removed from import list                                                          |
+| MINOR | AI insight visible for past dates     | ✅ Resolved — `date === getLocalDateString()` guard added                                       |
 
 ---
 

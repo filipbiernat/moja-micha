@@ -3,6 +3,7 @@
 ## Summary
 
 Implemented full OpenAI Chat Completions integration into Moja Micha:
+
 - API key and model stored/read from SQLite via `SETTING_KEYS`
 - Meal auto-analysis after save (add-mode only, fills null calories/notes)
 - Daily AI insight on today's journal view
@@ -10,22 +11,25 @@ Implemented full OpenAI Chat Completions integration into Moja Micha:
 
 ## Phase summary
 
-| Phase | Status |
-|---|---|
-| Schema + i18n | ✅ Done |
-| services/openai.ts | ✅ Done |
-| SettingsScreen (key + model picker) | ✅ Done |
-| MealFormSheet AI enrichment | ✅ Done |
-| DayView daily insight | ✅ Done |
-| Code review (3 cycles) | ✅ APPROVED |
+| Phase                               | Status      |
+| ----------------------------------- | ----------- |
+| Schema + i18n                       | ✅ Done     |
+| services/openai.ts                  | ✅ Done     |
+| SettingsScreen (key + model picker) | ✅ Done     |
+| MealFormSheet AI enrichment         | ✅ Done     |
+| DayView daily insight               | ✅ Done     |
+| Code review (3 cycles)              | ✅ APPROVED |
 
 ## Review report
+
 `docs/reviews/TASK-015-review.md`
 
 ## Test report
+
 `docs/testing/TASK-015-test.md`
 
 ## Commit message
+
 ```
 feat(ai): integrate OpenAI Chat Completions for meal analysis and daily insights
 

@@ -265,6 +265,47 @@ Wszystkie zadania 0–14 powyżej.
 - [x] Komunikat dzienny: jak idzie względem celu kalorycznego
 - [x] Obsługa przypadku braku sieci / błędu API
 
+### v2.1 – Inteligentna dekompozycja posiłku na składniki
+
+Rozszerzenie analizy AI: zamiast zwracać tylko łączną liczbę kalorii, model rozkłada posiłek na składniki i szacuje kalorie dla każdego z nich.
+
+- [ ] Rozszerzenie `MealAnalysis` o pole `ingredients: Array<{ name: string; calories: number }> | null`
+- [ ] Aktualizacja system promptu w `analyzeMeal` — model zwraca JSON z polami `ingredients`, `calories` (suma), `analysis`
+- [ ] Aktualizacja parsowania odpowiedzi i walidacji w `analyzeMeal`
+- [ ] Wyświetlenie rozbicia na składniki w widoku posiłku (zwijana lista pod sumą kalorii)
+- [ ] Tłumaczenia PL/EN dla nowych elementów UI (nagłówek listy składników, etykiety)
+- [ ] Obsługa przypadku gdy model nie zwróci `ingredients` (graceful fallback do dotychczasowego widoku)
+
+### v2.2 – Dzienne podsumowanie AI (Dietitian Summary)
+
+Analiza całego dnia przez model pełniący rolę dietetyka. Motywująca, profesjonalna, bezpośrednia.
+
+#### Ustalenia projektowe
+
+- **Trigger:** na żądanie (przycisk w widoku dnia) lub auto po dodaniu posiłku pod koniec dnia; nowe podsumowanie nadpisuje poprzednie dla tego dnia
+- **Format odpowiedzi:** Markdown renderowany przez `react-native-markdown-display` — czytelna struktura z pogrubieniami i listami, łatwa do szybkiego skanowania
+- **Sekcje analizy (zawsze obecne):** co poszło dobrze · co warto poprawić · jedna konkretna rada na jutro
+- **Analiza ilościowa** (jeśli zalogowano kalorie): ocena względem celu dziennego, nadwyżka/deficyt
+- **Analiza jakościowa** (zawsze): regularność posiłków, różnorodność, skład — niezależnie od obecności kalorii
+- **Kontekst przekazywany modelowi:** lista posiłków dnia (nazwa, treść, kcal lub brak), łączne kcal, cel dzienny, liczba posiłków + godziny (regularność), profil użytkownika (płeć, wiek, cel dietetyczny), średnia kcal z ostatnich 7 dni (trend historyczny)
+- **Przechowywanie:** nowa tabela `daily_summaries` (`date` PK, `content` TEXT, `generated_at` INTEGER)
+- **Odświeżanie:** tak — ponowne wywołanie nadpisuje rekord w tabeli
+- **Zastąpienie `getDailyInsight`:** obecny przycisk „Zapytaj AI" i funkcja `getDailyInsight` (2–3 zdania plain text) zostają usunięte — v2.2 jest ich pełnym zamiennikiem; przycisk „Zapytaj AI" w DayView zastępuje `DailySummaryCard`
+
+#### Zadania
+
+- [ ] Nowe pola w ustawieniach: płeć (kobieta / mężczyzna / nieokreślona), wiek (liczba), cel dietetyczny (redukcja / utrzymanie wagi / budowanie masy)
+- [ ] Tłumaczenia PL/EN dla nowych pól ustawień
+- [ ] Migracja DB: nowa tabela `daily_summaries`
+- [ ] Warstwa DB: `upsertDailySummary`, `getDailySummary` w `db/`
+- [ ] Nowa funkcja `getDailySummary` w `services/openai.ts` — prompt roli dietetyka, zwraca Markdown; usunięcie `getDailyInsight`
+- [ ] Query pomocnicze: średnia kcal z ostatnich 7 dni (do kontekstu modelu)
+- [ ] Instalacja `react-native-markdown-display`
+- [ ] Komponent `DailySummaryCard` — wyświetla wygenerowany Markdown, stan ładowania, przycisk „Odśwież"
+- [ ] Zastąpienie bloku „Zapytaj AI" w `DayView` przez `DailySummaryCard` (dostępny dla dowolnego dnia, nie tylko dzisiejszego)
+- [ ] Obsługa stanu: brak podsumowania (zachęta do wygenerowania), ładowanie, błąd API
+- [ ] Obsługa braku kalorii: model dostaje flagę `caloriesAvailable: boolean` i dostosowuje zakres analizy
+
 ### v3 – Android Widget
 
 - [ ] Widget 1×1 na ekranie głównym Androida
@@ -274,4 +315,4 @@ Wszystkie zadania 0–14 powyżej.
 
 ---
 
-_Ostatnia aktualizacja: 2026-03-10_
+_Ostatnia aktualizacja: 2026-03-22_
