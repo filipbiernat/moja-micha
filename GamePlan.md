@@ -272,7 +272,7 @@ Rozszerzenie analizy AI: zamiast zwracać tylko łączną liczbę kalorii, model
 - [x] Rozszerzenie `MealAnalysis` o pole `ingredients: Array<{ name: string; calories: number }> | null`
 - [x] Aktualizacja system promptu w `analyzeMeal` — model zwraca JSON z polami `ingredients`, `calories` (suma), `analysis`
 - [x] Aktualizacja parsowania odpowiedzi i walidacji w `analyzeMeal`
-- [x] Wyświetlenie rozbicia na składniki w widoku posiłku (zwijana lista pod sumą kalorii)
+- [x] Wyświetlenie rozbicia na składników w widoku posiłku (zwijana lista pod sumą kalorii)
 - [x] Tłumaczenia PL/EN dla nowych elementów UI (nagłówek listy składników, etykiety)
 - [x] Obsługa przypadku gdy model nie zwróci `ingredients` (graceful fallback do dotychczasowego widoku)
 
@@ -294,17 +294,17 @@ Analiza całego dnia przez model pełniący rolę dietetyka. Motywująca, profes
 
 #### Zadania
 
-- [ ] Nowe pola w ustawieniach: płeć (kobieta / mężczyzna / nieokreślona), wiek (liczba), cel dietetyczny (redukcja / utrzymanie wagi / budowanie masy)
-- [ ] Tłumaczenia PL/EN dla nowych pól ustawień
-- [ ] Migracja DB: nowa tabela `daily_summaries`
-- [ ] Warstwa DB: `upsertDailySummary`, `getDailySummary` w `db/`
-- [ ] Nowa funkcja `getDailySummary` w `services/openai.ts` — prompt roli dietetyka, zwraca Markdown; usunięcie `getDailyInsight`
-- [ ] Query pomocnicze: średnia kcal z ostatnich 7 dni (do kontekstu modelu)
-- [ ] Instalacja `react-native-markdown-display`
-- [ ] Komponent `DailySummaryCard` — wyświetla wygenerowany Markdown, stan ładowania, przycisk „Odśwież"
-- [ ] Zastąpienie bloku „Zapytaj AI" w `DayView` przez `DailySummaryCard` (dostępny dla dowolnego dnia, nie tylko dzisiejszego)
-- [ ] Obsługa stanu: brak podsumowania (zachęta do wygenerowania), ładowanie, błąd API
-- [ ] Obsługa braku kalorii: model dostaje flagę `caloriesAvailable: boolean` i dostosowuje zakres analizy
+- [x] Nowe pola w ustawieniach: płeć (kobieta / mężczyzna / nieokreślona), wiek (liczba), cel dietetyczny (redukcja / utrzymanie wagi / budowanie masy)
+- [x] Tłumaczenia PL/EN dla nowych pól ustawień
+- [x] Migracja DB: nowa tabela `daily_summaries`
+- [x] Warstwa DB: `upsertDailySummary`, `getDailySummary` w `db/`
+- [x] Nowa funkcja `getDailySummary` w `services/openai.ts` — prompt roli dietetyka, zwraca Markdown; usunięcie `getDailyInsight`
+- [x] Query pomocnicze: średnia kcal z ostatnich 7 dni (do kontekstu modelu)
+- [x] Instalacja `react-native-markdown-display`
+- [x] Komponent `DailySummaryCard` — wyświetla wygenerowany Markdown, stan ładowania, przycisk „Odśwież"
+- [x] Zastąpienie bloku „Zapytaj AI" w `DayView` przez `DailySummaryCard` (dostępny dla dowolnego dnia, nie tylko dzisiejszego)
+- [x] Obsługa stanu: brak podsumowania (zachęta do wygenerowania), ładowanie, błąd API
+- [x] Obsługa braku kalorii: model dostaje flagę `caloriesAvailable: boolean` i dostosowuje zakres analizy
 
 ### v3 – Android Widget
 

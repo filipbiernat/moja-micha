@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import {
     ActivityIndicator,
-    Alert,
     View,
     Text,
     StyleSheet,
@@ -17,17 +16,19 @@ import {
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useDatabase } from "../db/DatabaseProvider";
+import { getDailySummary as getStoredDailySummary } from "../db/dailySummaries";
 import { getMealsByDate, getStreak, setMealStarred } from "../db/meals";
 import { toggleStarredMeal } from "../db/favorites";
 import type { Meal } from "../db/schema";
 import { getSetting } from "../db/settings";
 import { SETTING_KEYS } from "../db/schema";
-import { getDailyInsight, DEFAULT_OPENAI_MODEL } from "../services/openai";
-import { getLocalDateString } from "../utils";
+import { DEFAULT_OPENAI_MODEL } from "../services/openai";
+import { generateAndStoreDailySummary } from "../services/dailySummary";
 import { parseMealAnalysisValue } from "../utils/mealAnalysis";
 import { useTheme } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
 import { SortCycleButton, type SortCycleOption } from "./SortCycleButton";
+import { DailySummaryCard } from "./DailySummaryCard";
 
 type MealSortOrder = "newest" | "oldest" | "alpha";
 
@@ -61,18 +62,25 @@ export function DayView({
     const [isLoading, setIsLoading] = useState(true);
     const [apiKey, setApiKey] = useState<string | null>(null);
     const [model, setModel] = useState<string>(DEFAULT_OPENAI_MODEL);
-    const [aiInsight, setAiInsight] = useState<string | null>(null);
-    const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+    const [dailySummary, setDailySummary] = useState<string | null>(null);
+    const [dailySummaryGeneratedAt, setDailySummaryGeneratedAt] = useState<
+        number | null
+    >(null);
+    const [dailySummaryError, setDailySummaryError] = useState<string | null>(
+        null,
+    );
+    const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
     const [expandedIngredientMeals, setExpandedIngredientMeals] = useState<
         Record<number, boolean>
     >({});
-    const insightAbortRef = useRef(0);
+    const summaryAbortRef = useRef(0);
 
     const loadData = useCallback(() => {
-        insightAbortRef.current += 1;
-        setAiInsight(null);
-        setIsLoadingInsight(false);
+        summaryAbortRef.current += 1;
+        setDailySummaryError(null);
+        setIsGeneratingSummary(false);
         setExpandedIngredientMeals({});
+        setIsLoading(true);
         try {
             const loadedMeals = getMealsByDate(db, date);
             setMeals(loadedMeals);
@@ -99,6 +107,10 @@ export function DayView({
                     ? modelValue.trim()
                     : DEFAULT_OPENAI_MODEL,
             );
+
+            const storedSummary = getStoredDailySummary(db, date);
+            setDailySummary(storedSummary?.content ?? null);
+            setDailySummaryGeneratedAt(storedSummary?.generatedAt ?? null);
         } catch (error) {
             console.error("Failed to load date info:", error);
         } finally {
@@ -111,7 +123,9 @@ export function DayView({
     }, [loadData, reloadKey]);
 
     const getEffectiveCalories = useCallback((meal: Meal) => {
-        return meal.calories ?? parseMealAnalysisValue(meal.aiAnalysis).calories;
+        return (
+            meal.calories ?? parseMealAnalysisValue(meal.aiAnalysis).calories
+        );
     }, []);
 
     const totalKcal = useMemo(() => {
@@ -188,52 +202,33 @@ export function DayView({
         }));
     }, []);
 
-    const handleAskAI = useCallback(async () => {
+    const handleGenerateSummary = useCallback(async () => {
         if (!apiKey || meals.length === 0) return;
-        setIsLoadingInsight(true);
-        const abortId = ++insightAbortRef.current;
+        setDailySummaryError(null);
+        setIsGeneratingSummary(true);
+        const abortId = ++summaryAbortRef.current;
         try {
-            const mealsSummary = meals
-                .map(
-                    (m) => {
-                        const effectiveCalories = getEffectiveCalories(m);
-
-                        return `${m.mealText}${effectiveCalories !== null ? ` (${effectiveCalories} kcal)` : ""}`;
-                    },
-                )
-                .join(", ");
-            const insight = await getDailyInsight(
+            const summaryRecord = await generateAndStoreDailySummary(
+                db,
+                date,
                 apiKey,
-                mealsSummary,
-                totalKcal,
-                calorieGoal,
                 i18n.language ?? "en",
                 model,
             );
-            if (insightAbortRef.current !== abortId) return;
-            setAiInsight(insight);
+            if (summaryAbortRef.current !== abortId) return;
+
+            setDailySummary(summaryRecord?.content ?? null);
+            setDailySummaryGeneratedAt(summaryRecord?.generatedAt ?? null);
         } catch (err: unknown) {
-            if (insightAbortRef.current !== abortId) return;
-            console.warn("Daily insight failed:", err);
-            Alert.alert(
-                t("dayView.ai_insight_error_title"),
-                t("dayView.ai_insight_error_message"),
-            );
+            if (summaryAbortRef.current !== abortId) return;
+            console.warn("Daily summary failed:", err);
+            setDailySummaryError(t("dayView.daily_summary_error_message"));
         } finally {
-            if (insightAbortRef.current === abortId) {
-                setIsLoadingInsight(false);
+            if (summaryAbortRef.current === abortId) {
+                setIsGeneratingSummary(false);
             }
         }
-    }, [
-        apiKey,
-        model,
-        meals,
-        totalKcal,
-        calorieGoal,
-        i18n.language,
-        t,
-        getEffectiveCalories,
-    ]);
+    }, [db, date, apiKey, model, meals, i18n.language, t]);
 
     const handlePrevDay = useCallback(() => {
         if (!onDateChange) return;
@@ -342,7 +337,7 @@ export function DayView({
                         </Text>
                     ) : null}
                     {ingredientCount > 0 ? (
-                        <View style={{ marginTop: spacing.sm }}>
+                        <View>
                             <TouchableOpacity
                                 testID={`meal-ingredients-toggle-${item.id}`}
                                 accessibilityLabel={
@@ -355,37 +350,19 @@ export function DayView({
                                     styles.ingredientToggle,
                                     {
                                         borderColor: colors.border,
-                                        borderRadius: borderRadius.sm,
-                                        backgroundColor: colors.surfaceElevated,
                                     },
                                 ]}
                             >
-                                <View>
-                                    <Text
-                                        style={{
-                                            color: colors.textSecondary,
-                                            fontSize: typography.fontSize.xs,
-                                            fontWeight:
-                                                typography.fontWeight.semiBold,
-                                            textTransform: "uppercase",
-                                        }}
-                                    >
-                                        {t("dayView.ingredients_title")}
-                                    </Text>
-                                    <Text
-                                        style={{
-                                            color: colors.primary,
-                                            fontSize: typography.fontSize.sm,
-                                            fontWeight:
-                                                typography.fontWeight.semiBold,
-                                                marginTop: spacing.xs,
-                                        }}
-                                    >
-                                        {ingredientsExpanded
-                                            ? t("dayView.ingredients_hide")
-                                            : t("dayView.ingredients_show")} ({ingredientCount})
-                                    </Text>
-                                </View>
+                                <Text
+                                    style={{
+                                        color: colors.textMuted,
+                                        fontSize: typography.fontSize.xs,
+                                        fontWeight:
+                                            typography.fontWeight.medium,
+                                    }}
+                                >
+                                    {ingredientCount}
+                                </Text>
                                 <Ionicons
                                     name={
                                         ingredientsExpanded
@@ -393,47 +370,56 @@ export function DayView({
                                             : "chevron-down"
                                     }
                                     size={16}
-                                    color={colors.primary}
+                                    color={colors.textMuted}
                                 />
                             </TouchableOpacity>
-                            {ingredientsExpanded && parsedAiAnalysis.ingredients ? (
+                            {ingredientsExpanded &&
+                            parsedAiAnalysis.ingredients ? (
                                 <View
                                     style={[
                                         styles.ingredientList,
                                         {
                                             borderColor: colors.border,
                                             borderRadius: borderRadius.sm,
-                                            backgroundColor: colors.background,
+                                            backgroundColor: colors.surface,
                                         },
                                     ]}
                                 >
-                                    {parsedAiAnalysis.ingredients.map((ingredient) => (
-                                        <View
-                                            key={`${item.id}-${ingredient.name}`}
-                                            style={styles.ingredientRow}
-                                        >
-                                            <Text
-                                                style={{
-                                                    color: colors.textPrimary,
-                                                    fontSize: typography.fontSize.sm,
-                                                    flex: 1,
-                                                }}
+                                    {parsedAiAnalysis.ingredients.map(
+                                        (ingredient) => (
+                                            <View
+                                                key={`${item.id}-${ingredient.name}`}
+                                                style={styles.ingredientRow}
                                             >
-                                                {ingredient.name}
-                                            </Text>
-                                            <Text
-                                                style={{
-                                                    color: colors.textSecondary,
-                                                    fontSize: typography.fontSize.sm,
-                                                    fontWeight:
-                                                        typography.fontWeight
-                                                            .semiBold,
-                                                }}
-                                            >
-                                                {ingredient.calories} {t("common.kcal_unit")}
-                                            </Text>
-                                        </View>
-                                    ))}
+                                                <Text
+                                                    style={{
+                                                        color: colors.textPrimary,
+                                                        fontSize:
+                                                            typography.fontSize
+                                                                .sm,
+                                                        flex: 1,
+                                                    }}
+                                                >
+                                                    {ingredient.name}
+                                                </Text>
+                                                <Text
+                                                    style={{
+                                                        color: colors.textSecondary,
+                                                        fontSize:
+                                                            typography.fontSize
+                                                                .sm,
+                                                        fontWeight:
+                                                            typography
+                                                                .fontWeight
+                                                                .semiBold,
+                                                    }}
+                                                >
+                                                    {ingredient.calories}{" "}
+                                                    {t("common.kcal_unit")}
+                                                </Text>
+                                            </View>
+                                        ),
+                                    )}
                                 </View>
                             ) : null}
                         </View>
@@ -466,7 +452,9 @@ export function DayView({
                         name={item.isStarred === 1 ? "star" : "star-outline"}
                         size={20}
                         color={
-                            item.isStarred === 1 ? colors.star : colors.textMuted
+                            item.isStarred === 1
+                                ? colors.star
+                                : colors.textMuted
                         }
                     />
                 </TouchableOpacity>
@@ -512,6 +500,105 @@ export function DayView({
         streak === 1
             ? t("dayView.streak", { count: streak })
             : t("dayView.streak_plural", { count: streak });
+    const listHeader = (
+        <>
+            <View
+                style={{
+                    backgroundColor: colors.surface,
+                    borderRadius: borderRadius.lg,
+                    padding: spacing.md,
+                    marginBottom: spacing.md,
+                }}
+            >
+                <View style={styles.summaryHeader}>
+                    <Text
+                        style={{
+                            color: colors.textSecondary,
+                            fontSize: typography.fontSize.md,
+                        }}
+                    >
+                        {t("dayView.kcal_sum")}
+                    </Text>
+                    <Text
+                        style={[
+                            styles.summaryValue,
+                            {
+                                color: colors.textPrimary,
+                                fontSize: typography.fontSize.xxxl,
+                                fontWeight: typography.fontWeight.bold,
+                            },
+                        ]}
+                    >
+                        {totalKcal}
+                    </Text>
+                </View>
+                {calorieGoal ? (
+                    <View style={styles.goalContainer}>
+                        <View
+                            style={[
+                                styles.progressBarBackground,
+                                {
+                                    backgroundColor:
+                                        colors.progressBarBackground,
+                                    borderRadius: borderRadius.sm,
+                                },
+                            ]}
+                        >
+                            <View
+                                style={[
+                                    styles.progressBarFill,
+                                    {
+                                        backgroundColor: progressColor,
+                                        width: `${progress * 100}%`,
+                                        borderRadius: borderRadius.sm,
+                                    },
+                                ]}
+                            />
+                        </View>
+                        <Text
+                            style={{
+                                color: colors.textSecondary,
+                                fontSize: typography.fontSize.xs,
+                                marginTop: spacing.xs,
+                                textAlign: "right",
+                            }}
+                        >
+                            {t("dayView.kcal_goal", { goal: calorieGoal })}
+                        </Text>
+                    </View>
+                ) : null}
+
+                {meals.length > 0 ? (
+                    <DailySummaryCard
+                        key={date}
+                        hasApiKey={Boolean(apiKey)}
+                        hasMeals={meals.length > 0}
+                        summaryContent={dailySummary}
+                        generatedAt={dailySummaryGeneratedAt}
+                        isGenerating={isGeneratingSummary}
+                        errorMessage={dailySummaryError}
+                        onGenerate={handleGenerateSummary}
+                    />
+                ) : null}
+            </View>
+
+            {meals.length > 0 && (
+                <View
+                    style={[
+                        styles.listControls,
+                        { marginBottom: spacing.sm },
+                    ]}
+                >
+                    <SortCycleButton
+                        testID="dayview-sort-toggle"
+                        value={sortOrder}
+                        options={sortOptions}
+                        onChange={setSortOrder}
+                    />
+                </View>
+            )}
+        </>
+    );
 
     if (isLoading) {
         return (
@@ -661,192 +748,20 @@ export function DayView({
                     <View style={styles.navButtonPlaceholder} />
                 )}
             </View>
-
-            {/* Summary */}
-            <View
-                style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: borderRadius.lg,
-                    padding: spacing.md,
-                    margin: spacing.md,
-                }}
-            >
-                <View style={styles.summaryHeader}>
-                    <Text
-                        style={{
-                            color: colors.textSecondary,
-                            fontSize: typography.fontSize.md,
-                        }}
-                    >
-                        {t("dayView.kcal_sum")}
-                    </Text>
-                    <Text
-                        style={[
-                            styles.summaryValue,
-                            {
-                                color: colors.textPrimary,
-                                fontSize: typography.fontSize.xxxl,
-                                fontWeight: typography.fontWeight.bold,
-                            },
-                        ]}
-                    >
-                        {totalKcal}
-                    </Text>
-                </View>
-                {calorieGoal ? (
-                    <View style={styles.goalContainer}>
-                        <View
-                            style={[
-                                styles.progressBarBackground,
-                                {
-                                    backgroundColor:
-                                        colors.progressBarBackground,
-                                    borderRadius: borderRadius.sm,
-                                },
-                            ]}
-                        >
-                            <View
-                                style={[
-                                    styles.progressBarFill,
-                                    {
-                                        backgroundColor: progressColor,
-                                        width: `${progress * 100}%`,
-                                        borderRadius: borderRadius.sm,
-                                    },
-                                ]}
-                            />
-                        </View>
-                        <Text
-                            style={{
-                                color: colors.textSecondary,
-                                fontSize: typography.fontSize.xs,
-                                marginTop: spacing.xs,
-                                textAlign: "right",
-                            }}
-                        >
-                            {t("dayView.kcal_goal", { goal: calorieGoal })}
-                        </Text>
-                    </View>
-                ) : null}
-
-                {/* AI daily insight — today only */}
-                {apiKey &&
-                    meals.length > 0 &&
-                    date === getLocalDateString() && (
-                        <View style={{ marginTop: spacing.sm }}>
-                            {aiInsight ? (
-                                <View
-                                    style={{
-                                        backgroundColor:
-                                            colors.surfaceHighlight,
-                                        borderRadius: borderRadius.md,
-                                        padding: spacing.sm,
-                                        marginTop: spacing.xs,
-                                    }}
-                                >
-                                    <Text
-                                        style={{
-                                            color: colors.textPrimary,
-                                            fontSize: typography.fontSize.sm,
-                                            fontStyle: "italic",
-                                        }}
-                                    >
-                                        {aiInsight}
-                                    </Text>
-                                </View>
-                            ) : (
-                                <TouchableOpacity
-                                    onPress={handleAskAI}
-                                    disabled={isLoadingInsight}
-                                    testID="dayview-ai-insight-btn"
-                                    accessibilityLabel={t(
-                                        "dayView.ai_insight_btn",
-                                    )}
-                                    style={{
-                                        flexDirection: "row",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        backgroundColor: colors.surface,
-                                        borderColor: colors.border,
-                                        borderWidth: 1,
-                                        borderRadius: borderRadius.md,
-                                        paddingVertical: spacing.sm,
-                                        paddingHorizontal: spacing.md,
-                                        marginTop: spacing.xs,
-                                        gap: spacing.xs,
-                                    }}
-                                >
-                                    {isLoadingInsight ? (
-                                        <>
-                                            <ActivityIndicator
-                                                size="small"
-                                                color={colors.primary}
-                                            />
-                                            <Text
-                                                style={{
-                                                    color: colors.textSecondary,
-                                                    fontSize:
-                                                        typography.fontSize.sm,
-                                                }}
-                                            >
-                                                {t(
-                                                    "dayView.ai_insight_loading",
-                                                )}
-                                            </Text>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Ionicons
-                                                name="sparkles-outline"
-                                                size={14}
-                                                color={colors.primary}
-                                            />
-                                            <Text
-                                                style={{
-                                                    color: colors.primary,
-                                                    fontSize:
-                                                        typography.fontSize.sm,
-                                                    fontWeight:
-                                                        typography.fontWeight
-                                                            .semiBold,
-                                                }}
-                                            >
-                                                {t("dayView.ai_insight_btn")}
-                                            </Text>
-                                        </>
-                                    )}
-                                </TouchableOpacity>
-                            )}
-                        </View>
-                    )}
-            </View>
-
-            {/* List Controls */}
-            {meals.length > 0 && (
-                <View
-                    style={[
-                        styles.listControls,
-                        { paddingHorizontal: spacing.md },
-                    ]}
-                >
-                    <SortCycleButton
-                        testID="dayview-sort-toggle"
-                        value={sortOrder}
-                        options={sortOptions}
-                        onChange={setSortOrder}
-                    />
-                </View>
-            )}
-
             {/* Meals List */}
             <FlatList
                 data={sortedMeals}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderMeal}
+                ListHeaderComponent={listHeader}
                 ListEmptyComponent={renderEmpty}
                 contentContainerStyle={[
                     styles.listContent,
-                    { padding: spacing.md, paddingBottom: 100 },
+                    {
+                        paddingHorizontal: spacing.md,
+                        paddingTop: spacing.md,
+                        paddingBottom: 100,
+                    },
                 ]}
                 showsVerticalScrollIndicator={false}
             />
@@ -941,12 +856,14 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     ingredientToggle: {
-        borderWidth: 1,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
+        borderBottomWidth: 1,
+        paddingTop: 6,
+        paddingBottom: 2,
+        paddingHorizontal: 2,
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
+        gap: 6,
     },
     ingredientList: {
         borderWidth: 1,

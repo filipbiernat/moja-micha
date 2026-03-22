@@ -17,7 +17,7 @@ import {
 } from "../../i18n/LanguageProvider";
 import { useDatabase } from "../../db";
 import { getSetting, setSetting, deleteSetting } from "../../db/settings";
-import { SETTING_KEYS } from "../../db/schema";
+import { SETTING_KEYS, type DietGoal, type UserSex } from "../../db/schema";
 import { DEFAULT_OPENAI_MODEL } from "../../services/openai";
 
 const MODEL_OPTIONS = [
@@ -28,6 +28,9 @@ const MODEL_OPTIONS = [
     "gpt-5",
     "gpt-5.2",
 ] as const;
+
+const PROFILE_SEX_OPTIONS = ["female", "male", "unspecified"] as const;
+const DIET_GOAL_OPTIONS = ["fat_loss", "maintain", "muscle_gain"] as const;
 
 export default function SettingsScreen() {
     const theme = useTheme();
@@ -64,6 +67,37 @@ export default function SettingsScreen() {
         }
     });
     const [apiKeyVisible, setApiKeyVisible] = useState(false);
+    const [profileSex, setProfileSex] = useState<UserSex>(() => {
+        try {
+            const value = getSetting(db, SETTING_KEYS.PROFILE_SEX);
+            return value === "female" ||
+                value === "male" ||
+                value === "unspecified"
+                ? value
+                : "unspecified";
+        } catch {
+            return "unspecified";
+        }
+    });
+    const [profileAgeText, setProfileAgeText] = useState<string>(() => {
+        try {
+            return getSetting(db, SETTING_KEYS.PROFILE_AGE) ?? "";
+        } catch {
+            return "";
+        }
+    });
+    const [dietGoal, setDietGoal] = useState<DietGoal>(() => {
+        try {
+            const value = getSetting(db, SETTING_KEYS.DIET_GOAL);
+            return value === "fat_loss" ||
+                value === "maintain" ||
+                value === "muscle_gain"
+                ? value
+                : "maintain";
+        } catch {
+            return "maintain";
+        }
+    });
 
     const handleToggleGoal = useCallback(
         (enabled: boolean) => {
@@ -132,6 +166,57 @@ export default function SettingsScreen() {
         [db],
     );
 
+    const handleProfileSexSelect = useCallback(
+        (value: UserSex) => {
+            setProfileSex(value);
+            try {
+                setSetting(db, SETTING_KEYS.PROFILE_SEX, value);
+            } catch {
+                /* ignore */
+            }
+        },
+        [db],
+    );
+
+    const handleProfileAgeCommit = useCallback(
+        (text: string) => {
+            const trimmed = text.trim();
+            setProfileAgeText(trimmed);
+
+            const numericAge = parseInt(trimmed, 10);
+            try {
+                if (
+                    !trimmed ||
+                    !Number.isFinite(numericAge) ||
+                    numericAge <= 0
+                ) {
+                    deleteSetting(db, SETTING_KEYS.PROFILE_AGE);
+                } else {
+                    setSetting(
+                        db,
+                        SETTING_KEYS.PROFILE_AGE,
+                        String(numericAge),
+                    );
+                }
+            } catch {
+                /* ignore */
+            }
+        },
+        [db],
+    );
+
+    const handleDietGoalSelect = useCallback(
+        (value: DietGoal) => {
+            setDietGoal(value);
+            try {
+                setSetting(db, SETTING_KEYS.DIET_GOAL, value);
+            } catch {
+                /* ignore */
+            }
+        },
+        [db],
+    );
+
     const [selectedModel, setSelectedModel] = useState<string>(() => {
         try {
             return (
@@ -181,6 +266,24 @@ export default function SettingsScreen() {
             { value: "en", label: t("settings.lang_en"), emoji: "🇬🇧" },
             { value: "system", label: t("settings.lang_system"), emoji: "📱" },
         ],
+        [t],
+    );
+
+    const PROFILE_SEX_LABELS = useMemo(
+        () => ({
+            female: t("settings.profile_sex_female"),
+            male: t("settings.profile_sex_male"),
+            unspecified: t("settings.profile_sex_unspecified"),
+        }),
+        [t],
+    );
+
+    const DIET_GOAL_LABELS = useMemo(
+        () => ({
+            fat_loss: t("settings.profile_goal_fat_loss"),
+            maintain: t("settings.profile_goal_maintain"),
+            muscle_gain: t("settings.profile_goal_muscle_gain"),
+        }),
         [t],
     );
 
@@ -341,6 +444,125 @@ export default function SettingsScreen() {
                                 </View>
                             </>
                         )}
+                    </View>
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionLabel}>
+                        {t("settings.profile_section")}
+                    </Text>
+                    <View style={styles.card}>
+                        <View
+                            style={[
+                                styles.optionRow,
+                                { paddingBottom: theme.spacing.xs },
+                            ]}
+                        >
+                            <Text style={styles.optionLabel}>
+                                {t("settings.profile_sex_label")}
+                            </Text>
+                        </View>
+                        {PROFILE_SEX_OPTIONS.map((option, index) => {
+                            const isActive = profileSex === option;
+                            const isLast =
+                                index === PROFILE_SEX_OPTIONS.length - 1;
+
+                            return (
+                                <React.Fragment key={option}>
+                                    <TouchableOpacity
+                                        style={styles.optionRow}
+                                        onPress={() =>
+                                            handleProfileSexSelect(option)
+                                        }
+                                        accessibilityRole="radio"
+                                        accessibilityState={{
+                                            checked: isActive,
+                                        }}
+                                        testID={`settings-profile-sex-${option}`}
+                                    >
+                                        <Text style={styles.optionLabel}>
+                                            {PROFILE_SEX_LABELS[option]}
+                                        </Text>
+                                        {isActive && (
+                                            <View
+                                                style={styles.activeIndicator}
+                                            />
+                                        )}
+                                    </TouchableOpacity>
+                                    {!isLast && <View style={styles.divider} />}
+                                </React.Fragment>
+                            );
+                        })}
+
+                        <View style={styles.divider} />
+                        <View style={styles.optionRow}>
+                            <TextInput
+                                style={styles.goalInput}
+                                value={profileAgeText}
+                                onChangeText={setProfileAgeText}
+                                onSubmitEditing={() => {
+                                    handleProfileAgeCommit(profileAgeText);
+                                    Keyboard.dismiss();
+                                }}
+                                onBlur={() =>
+                                    handleProfileAgeCommit(profileAgeText)
+                                }
+                                keyboardType="numeric"
+                                returnKeyType="done"
+                                placeholder={t(
+                                    "settings.profile_age_placeholder",
+                                )}
+                                placeholderTextColor={theme.colors.textMuted}
+                                maxLength={3}
+                                testID="settings-profile-age-input"
+                            />
+                            <Text style={styles.goalUnit}>
+                                {t("settings.profile_age_label")}
+                            </Text>
+                        </View>
+
+                        <View style={styles.divider} />
+                        <View
+                            style={[
+                                styles.optionRow,
+                                { paddingBottom: theme.spacing.xs },
+                            ]}
+                        >
+                            <Text style={styles.optionLabel}>
+                                {t("settings.profile_goal_label")}
+                            </Text>
+                        </View>
+                        {DIET_GOAL_OPTIONS.map((option, index) => {
+                            const isActive = dietGoal === option;
+                            const isLast =
+                                index === DIET_GOAL_OPTIONS.length - 1;
+
+                            return (
+                                <React.Fragment key={option}>
+                                    <TouchableOpacity
+                                        style={styles.optionRow}
+                                        onPress={() =>
+                                            handleDietGoalSelect(option)
+                                        }
+                                        accessibilityRole="radio"
+                                        accessibilityState={{
+                                            checked: isActive,
+                                        }}
+                                        testID={`settings-diet-goal-${option}`}
+                                    >
+                                        <Text style={styles.optionLabel}>
+                                            {DIET_GOAL_LABELS[option]}
+                                        </Text>
+                                        {isActive && (
+                                            <View
+                                                style={styles.activeIndicator}
+                                            />
+                                        )}
+                                    </TouchableOpacity>
+                                    {!isLast && <View style={styles.divider} />}
+                                </React.Fragment>
+                            );
+                        })}
                     </View>
                 </View>
 

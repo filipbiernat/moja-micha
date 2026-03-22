@@ -15,11 +15,11 @@
 Environment:
 
 - Android emulator running
-- Installed dev build package: `com.anonymous.mojamicha`
+- Installed dev build package: `io.github.filipbiernat.mojamicha`
 - Local SQLite database seeded with a controlled meal where:
-  - `meals.calories = null`
-  - `ai_analysis` contained JSON with `calories = 300`
-  - `ingredients = [{ Eggs: 240 }, { Butter: 60 }]`
+    - `meals.calories = null`
+    - `ai_analysis` contained JSON with `calories = 300`
+    - `ingredients = [{ Eggs: 240 }, { Butter: 60 }]`
 
 ### T1: DayView fallback calories
 
@@ -36,8 +36,8 @@ Verified on emulator:
 - Meal card showed `Pokaż składniki (2)` when ingredients were present
 - Tapping the toggle expanded the list inline
 - Expanded state showed:
-  - `Eggs — 240 kcal`
-  - `Butter — 60 kcal`
+    - `Eggs — 240 kcal`
+    - `Butter — 60 kcal`
 - Tapping again switched the control to `Ukryj składniki (2)` / collapsed state as expected
 
 ### T3: Edit form readability

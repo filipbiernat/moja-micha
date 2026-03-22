@@ -9,7 +9,7 @@
 ## Emulator Environment
 
 - Android emulator: `Medium_Phone_API_36.1`
-- Installed app: `com.anonymous.mojamicha`
+- Installed app: `io.github.filipbiernat.mojamicha`
 - Metro: `npx expo start --dev-client --port 8081`
 
 ## Validated Behaviors

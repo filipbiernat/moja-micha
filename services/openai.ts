@@ -1,5 +1,5 @@
 /**
- * OpenAI API service for meal analysis and daily insights.
+ * OpenAI API service for meal analysis and stored daily summaries.
  * Uses the Chat Completions API with fetch() directly (no SDK dependency).
  */
 
@@ -18,6 +18,35 @@ export interface MealAnalysis {
     calories: number | null;
     analysis: string | null;
     ingredients: MealAnalysisIngredient[] | null;
+}
+
+export interface DailySummaryMealInput {
+    mealType: string;
+    mealText: string;
+    time: string;
+    calories: number | null;
+}
+
+export interface DailySummaryUserProfile {
+    sex: 'female' | 'male' | 'unspecified';
+    age: number | null;
+    dietGoal: 'fat_loss' | 'maintain' | 'muscle_gain';
+}
+
+export interface DailySummaryInput {
+    date: string;
+    meals: DailySummaryMealInput[];
+    totalKcal: number;
+    calorieGoal: number | null;
+    caloriesAvailable: boolean;
+    averageCaloriesLast7Days: number | null;
+    userProfile: DailySummaryUserProfile;
+}
+
+interface DailySummarySectionTitles {
+    positive: string;
+    improve: string;
+    tip: string;
 }
 
 function parseCalories(value: unknown): number | null {
@@ -56,6 +85,68 @@ function parseIngredients(value: unknown): MealAnalysisIngredient[] | null {
         );
 
     return normalized.length > 0 ? normalized : null;
+}
+
+function formatDietGoal(goal: DailySummaryUserProfile['dietGoal']): string {
+    switch (goal) {
+        case 'fat_loss':
+            return 'fat loss';
+        case 'muscle_gain':
+            return 'muscle gain';
+        default:
+            return 'weight maintenance';
+    }
+}
+
+function formatSex(sex: DailySummaryUserProfile['sex']): string {
+    switch (sex) {
+        case 'female':
+            return 'female';
+        case 'male':
+            return 'male';
+        default:
+            return 'unspecified';
+    }
+}
+
+function getDailySummarySectionTitles(language: string): DailySummarySectionTitles {
+    if (language === 'pl') {
+        return {
+            positive: 'Co poszło dobrze',
+            improve: 'Co poprawić',
+            tip: 'Jedna konkretna wskazówka na jutro',
+        };
+    }
+
+    return {
+        positive: 'What went well',
+        improve: 'What to improve',
+        tip: 'One concrete tip for tomorrow',
+    };
+}
+
+function normalizeDailySummaryHeadings(content: string, language: string): string {
+    const titles = getDailySummarySectionTitles(language);
+
+    return content
+        .replace(/^#{1,6}\s*What went well\s*$/gim, `## ${titles.positive}`)
+        .replace(/^#{1,6}\s*What to improve\s*$/gim, `## ${titles.improve}`)
+        .replace(
+            /^#{1,6}\s*One concrete tip for tomorrow\s*$/gim,
+            `## ${titles.tip}`,
+        )
+        .replace(/^#{1,6}\s*Co poszło dobrze\s*$/gim, `## ${titles.positive}`)
+        .replace(/^#{1,6}\s*Co poszlo dobrze\s*$/gim, `## ${titles.positive}`)
+        .replace(/^#{1,6}\s*Co poprawić\s*$/gim, `## ${titles.improve}`)
+        .replace(/^#{1,6}\s*Co poprawic\s*$/gim, `## ${titles.improve}`)
+        .replace(
+            /^#{1,6}\s*Jedna konkretna wskazówka na jutro\s*$/gim,
+            `## ${titles.tip}`,
+        )
+        .replace(
+            /^#{1,6}\s*Jedna konkretna wskazowka na jutro\s*$/gim,
+            `## ${titles.tip}`,
+        );
 }
 
 // ─── Internal fetch helper ─────────────────────────────────────────────────
@@ -145,7 +236,7 @@ export async function analyzeMeal(
                     `"ingredients" (an array of objects with "name" and "calories", or null if you cannot break the meal down reliably), ` +
                     `"calories" (integer, estimated total kcal, ideally matching the ingredient sum, or null if you cannot reliably estimate), and ` +
                     `"analysis" (string, a concise 1–2 sentence nutritional note, or null). ` +
-                    `${langInstruction} Return nothing else — no markdown, no explanation.`,
+                    `${langInstruction} The ingredient names and the analysis text must be written in the requested language. Return nothing else — no markdown, no explanation.`,
             },
             {
                 role: 'user',
@@ -172,26 +263,43 @@ export async function analyzeMeal(
     return { calories, analysis, ingredients };
 }
 
-/**
- * Generate a short daily progress insight based on today's meals vs. calorie goal.
- * @param apiKey  User's OpenAI API key.
- * @param mealsSummary  A multi-line text listing today's meals and their kcal.
- * @param totalKcal  Total kcal logged today.
- * @param goalKcal  Daily calorie goal.
- * @param language  UI language ('pl' | 'en').
- */
-export async function getDailyInsight(
+export async function getDailySummary(
     apiKey: string,
-    mealsSummary: string,
-    totalKcal: number,
-    goalKcal: number | null,
+    input: DailySummaryInput,
     language: string,
     model: string = DEFAULT_OPENAI_MODEL,
 ): Promise<string> {
+    const titles = getDailySummarySectionTitles(language);
     const langInstruction =
         language === 'pl'
             ? 'Odpowiedz w języku polskim.'
             : 'Reply in English.';
+
+    const mealsSummary = input.meals
+        .map((meal, index) => {
+            const baseLine = `${index + 1}. ${meal.time} | ${meal.mealType} | ${meal.mealText}`;
+
+            if (!input.caloriesAvailable) {
+                return baseLine;
+            }
+
+            return `${baseLine} | ${meal.calories !== null ? `${meal.calories} kcal` : 'kcal missing'}`;
+        })
+        .join('\n');
+
+    const calorieDelta =
+        input.calorieGoal !== null ? input.totalKcal - input.calorieGoal : null;
+    const latestMealTime =
+        input.meals.length > 0 ? input.meals[input.meals.length - 1]?.time ?? null : null;
+    const quantitativeContext = input.caloriesAvailable
+        ?
+              `Total logged kcal: ${input.totalKcal}\n` +
+              `Daily calorie goal: ${input.calorieGoal !== null ? `${input.calorieGoal} kcal` : 'not set'}\n` +
+              `Calorie delta vs goal: ${calorieDelta !== null ? `${calorieDelta} kcal` : 'unknown'}\n` +
+              `Average calories from previous 7 days: ${input.averageCaloriesLast7Days !== null ? `${input.averageCaloriesLast7Days} kcal` : 'unknown'}\n`
+        :
+              `Calorie data completeness: incomplete because at least one meal is missing calories\n` +
+              `Quantitative calorie assessment: unavailable for this day\n`;
 
     const content = await callOpenAI(
         apiKey,
@@ -200,20 +308,35 @@ export async function getDailyInsight(
             {
                 role: 'system',
                 content:
-                    `You are a friendly personal nutrition coach. ` +
-                    `Based on the user's meals today and their calorie goal, write a short encouraging insight (2–3 sentences). ` +
-                    `Focus on progress towards the goal and optional practical tip. ${langInstruction} ` +
-                    `Return plain text only — no JSON, no bullet points, no markdown.`,
+                    `You are a professional dietitian writing a concise daily nutrition summary. ` +
+                    `This is a snapshot of currently logged meals for the selected day, not automatically the final end-of-day result. ` +
+                    `Be direct, motivating, and practical. ` +
+                    `Return Markdown only. ` +
+                    `Always include exactly these three top-level sections in this order: ` +
+                    `## ${titles.positive}, ## ${titles.improve}, ## ${titles.tip}. ` +
+                    `Inside each section, use short bullet points or 1-2 compact paragraphs for quick scanning. ` +
+                    `If calories are available, include a quantitative assessment against the daily goal and mention surplus or deficit when justified. ` +
+                    `If calories are not available, skip quantitative judgments and focus on qualitative assessment only. ` +
+                    `If only a few meals are logged or the latest logged meal is early, do not write as if the day is already finished. ` +
+                    `Avoid phrases that imply the user is done eating for the day unless that clearly follows from the log. ` +
+                    `When the log is partial, explicitly frame the feedback as based on what has been logged so far. ` +
+                    `Always assess meal regularity, variety, and overall composition. ` +
+                    `Do not mention that you are an AI model. ${langInstruction}`,
             },
             {
                 role: 'user',
                 content:
-                    (goalKcal !== null ? `Daily calorie goal: ${goalKcal} kcal\n` : '') +
-                    `Total logged today: ${totalKcal} kcal\n\n` +
-                    `Today's meals:\n${mealsSummary}`,
+                    `Date: ${input.date}\n` +
+                    `Calories available: ${input.caloriesAvailable ? 'true' : 'false'}\n` +
+                    `Meals count: ${input.meals.length}\n` +
+                    `Latest logged meal time: ${latestMealTime ?? 'unknown'}\n` +
+                    `Meal times: ${input.meals.map((meal) => meal.time).join(', ') || 'none'}\n` +
+                    quantitativeContext +
+                    `User profile: sex=${formatSex(input.userProfile.sex)}, age=${input.userProfile.age ?? 'unknown'}, goal=${formatDietGoal(input.userProfile.dietGoal)}\n\n` +
+                    `Meals:\n${mealsSummary}`,
             },
         ],
     );
 
-    return content.trim();
+    return normalizeDailySummaryHeadings(content.trim(), language);
 }

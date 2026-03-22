@@ -6,6 +6,7 @@ export {
     meals,
     favorites,
     settings,
+    dailySummaries,
     SETTING_KEYS,
     type Meal,
     type NewMeal,
@@ -15,6 +16,9 @@ export {
     type FavoriteType,
     type Setting,
     type SettingKey,
+    type DailySummary,
+    type UserSex,
+    type DietGoal,
 } from './schema';
 
 // CRUD – Meals
@@ -31,6 +35,7 @@ export {
     getRecordStreak,
     getDatesWithMeals,
     getCalorieSummary,
+    getAverageCaloriesForPreviousDays,
     type CreateMealInput,
     type UpdateMealInput,
 } from './meals';
@@ -54,4 +59,12 @@ export {
     setSetting,
     getAllSettings,
     deleteSetting,
+    getUserProfileSettings,
+    type UserProfileSettings,
 } from './settings';
+
+export {
+    getDailySummary,
+    upsertDailySummary,
+    deleteDailySummary,
+} from './dailySummaries';

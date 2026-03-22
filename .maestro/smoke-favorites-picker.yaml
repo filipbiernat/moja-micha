@@ -1,6 +1,6 @@
 # Smoke test: favorites picker opens and fills form fields
 # Precondition: at least one favorite exists in the database
-appId: com.anonymous.mojamicha
+appId: io.github.filipbiernat.mojamicha
 ---
 - launchApp
 - tapOn:

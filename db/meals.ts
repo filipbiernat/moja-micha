@@ -1,4 +1,4 @@
-import { eq, desc, sql, and, gte, lte, isNotNull } from 'drizzle-orm';
+import { eq, desc, sql, and, gte, lte, lt, isNotNull } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { meals, type Meal, type NewMeal, type MealType } from './schema';
 
@@ -266,4 +266,40 @@ export function getCalorieSummary(
         .orderBy(meals.date)
         .all();
     return rows;
+}
+
+export function getAverageCaloriesForPreviousDays(
+    db: DB,
+    endDateExclusive: string,
+    days: number = 7,
+): number | null {
+    const endDate = new Date(`${endDateExclusive}T00:00:00`);
+    endDate.setDate(endDate.getDate() - days);
+
+    const startDate = `${endDate.getFullYear()}-${String(
+        endDate.getMonth() + 1,
+    ).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
+
+    const rows = db
+        .select({
+            date: meals.date,
+            totalCalories: sql<number>`COALESCE(SUM(${meals.calories}), 0)`,
+        })
+        .from(meals)
+        .where(
+            and(
+                gte(meals.date, startDate),
+                lt(meals.date, endDateExclusive),
+                isNotNull(meals.calories),
+            ),
+        )
+        .groupBy(meals.date)
+        .all();
+
+    if (rows.length === 0) {
+        return null;
+    }
+
+    const total = rows.reduce((sum, row) => sum + row.totalCalories, 0);
+    return Math.round(total / rows.length);
 }

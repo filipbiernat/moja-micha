@@ -1,5 +1,5 @@
 # Smoke test: add a meal from the Today screen
-appId: com.anonymous.mojamicha
+appId: io.github.filipbiernat.mojamicha
 ---
 - launchApp
 - tapOn:

@@ -35,6 +35,14 @@ export const settings = sqliteTable('settings', {
     value: text('value').notNull(),
 });
 
+// ─── Daily Summaries ─────────────────────────────────────────
+
+export const dailySummaries = sqliteTable('daily_summaries', {
+    date: text('date').primaryKey(),
+    content: text('content').notNull(),
+    generatedAt: integer('generated_at').notNull(),
+});
+
 // ─── Inferred Types ───────────────────────────────────────────
 
 export type Meal = typeof meals.$inferSelect;
@@ -44,6 +52,7 @@ export type Favorite = typeof favorites.$inferSelect;
 export type NewFavorite = typeof favorites.$inferInsert;
 
 export type Setting = typeof settings.$inferSelect;
+export type DailySummary = typeof dailySummaries.$inferSelect;
 
 // ─── Constants ────────────────────────────────────────────────
 
@@ -63,6 +72,12 @@ export const SETTING_KEYS = {
     DAILY_CALORIE_GOAL: 'daily_calorie_goal',
     OPENAI_API_KEY: 'openai_api_key',
     OPENAI_MODEL: 'openai_model',
+    PROFILE_SEX: 'profile_sex',
+    PROFILE_AGE: 'profile_age',
+    DIET_GOAL: 'diet_goal',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
+
+export type UserSex = 'female' | 'male' | 'unspecified';
+export type DietGoal = 'fat_loss' | 'maintain' | 'muscle_gain';

@@ -109,7 +109,7 @@ Physical Android device or emulator with Expo dev build required.
 
 **Date:** 2026-03-17  
 **Metro:** running on port 8081  
-**APK:** com.anonymous.mojamicha (dev build)
+**APK:** io.github.filipbiernat.mojamicha (dev build)
 
 | #   | Test                                                  | Result  | Notes                                                                                                                                      |
 | --- | ----------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------ |

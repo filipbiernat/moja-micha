@@ -72,9 +72,9 @@ Solution:
 1. Install Java 21 LTS: `winget install EclipseAdoptium.Temurin.21.JDK`
 2. Install Maestro: `curl -Ls "https://get.maestro.mobile.dev" | bash`
 3. Add to PATH: JAVA_HOME, ANDROID_HOME/platform-tools, ANDROID_HOME/emulator, ~/.maestro/bin
-4. Build dev APK: `JAVA_HOME="..." npx expo run:android` (installs `com.anonymous.mojamicha` on emulator)
+4. Build dev APK: `JAVA_HOME="..." npx expo run:android` (installs `io.github.filipbiernat.mojamicha` on emulator)
 5. Start Metro for dev build: `npx expo start --dev-client --port 8081` (NOT `--android` which picks Expo Go)
-6. Launch app via ADB: `adb -s emulator-5554 shell am start -n com.anonymous.mojamicha/.MainActivity`
+6. Launch app via ADB: `adb -s emulator-5554 shell am start -n io.github.filipbiernat.mojamicha/.MainActivity`
 7. Run tests: `maestro test .maestro/smoke-*.yaml`
    Key pitfall: Dev build connects to host's localhost:8081 via 10.0.2.2:8081. If Metro runs on 8082 (Expo Go), the dev build gets a blank loading screen.
    Key pitfall: Maestro text input does NOT support Unicode — use ASCII only in `inputText` steps.
@@ -135,4 +135,20 @@ Task: TASK-016
 Context: `MealFormSheet` save/edit flow for structured `meals.ai_analysis`
 Problem: When `ai_analysis` stores structured fallback calories, it is easy to create a hidden second calorie state that diverges from `meals.calories` during manual edits or AI enrichment.
 Solution: Treat the value being persisted to `meals.calories` as the single source of truth and serialize that same value into structured `ai_analysis`. In edit mode, prefill the calories input from the effective value (`meal.calories ?? parsedAiAnalysis.calories`) so clearing calories can remove both sources consistently.
+Discovered By: Ninja agent
+
+### 2026-03-22 — Use `adb exec-out run-as` for reliable app DB dumps on Android
+
+Task: TASK-017
+Context: Emulator-side verification of new SQLite tables and seeded runtime data
+Problem: Copying the app database out of the sandbox with `run-as ... cp ... /sdcard/...` was brittle and failed under shell quoting / tool differences, which made it hard to inspect the real post-migration DB state.
+Solution: Prefer `adb exec-out run-as <package> cat files/SQLite/<db-name> > tmp/<dump>.db`, then inspect the dump locally with `sqlite3`. This avoids intermediate file-copy issues and works well for quick schema/table verification during emulator testing.
+Discovered By: Ninja agent
+
+### 2026-03-22 — Reset local card UI state when the viewed day changes
+
+Task: TASK-017
+Context: `DayView` mounted child cards with local expand/collapse state
+Problem: A child component such as `DailySummaryCard` can preserve local UI state across date navigation if React reuses the same instance while only props change.
+Solution: When the UX requirement is “default state per date”, key the child by the viewed date (or reset local state from an explicit date-scoped prop) so expand/collapse does not leak between days.
 Discovered By: Ninja agent

@@ -25,7 +25,7 @@ Physical Android device or emulator with Expo dev build required.
 npx expo start --dev-client --port 8081
 
 # Launch app on emulator if needed
-adb -s emulator-5554 shell am start -n com.anonymous.mojamicha/.MainActivity
+adb -s emulator-5554 shell am start -n io.github.filipbiernat.mojamicha/.MainActivity
 ```
 
 ---

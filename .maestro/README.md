@@ -40,7 +40,7 @@ Verify: `maestro --version` (should show 2.x.x)
 
 ### 4. Build and install the dev APK (one-time per machine)
 
-The Maestro tests run against the native dev build (`com.anonymous.mojamicha`), NOT Expo Go.
+The Maestro tests run against the native dev build (`io.github.filipbiernat.mojamicha`), NOT Expo Go.
 
 ```bash
 JAVA_HOME="/c/Program Files/Eclipse Adoptium/jdk-21.0.10.7-hotspot" \
@@ -65,7 +65,7 @@ npx expo start --dev-client --port 8081
 ### 6. Launch the app on the emulator
 
 ```bash
-adb -s emulator-5554 shell am start -n com.anonymous.mojamicha/.MainActivity
+adb -s emulator-5554 shell am start -n io.github.filipbiernat.mojamicha/.MainActivity
 ```
 
 Verify the app loads (not blank) before running tests.
@@ -84,14 +84,14 @@ maestro test .maestro/smoke-favorites-picker.yaml
 
 1. **Java 8 doesn't work** — always use Java 21+. Set `JAVA_HOME` before running Maestro.
 2. **Unicode in `inputText` not supported** — use ASCII-only strings in Maestro YAML `inputText` steps.
-3. **Dev build vs Expo Go** — Maestro uses `appId: com.anonymous.mojamicha` (dev build). Expo Go has a different package name and will not work with these tests.
+3. **Dev build vs Expo Go** — Maestro uses `appId: io.github.filipbiernat.mojamicha` (dev build). Expo Go has a different package name and will not work with these tests.
 4. **Metro must be on port 8081** — if Metro runs on a different port, the dev build shows a blank screen. Use `--port 8081` explicitly.
 5. **Quick entry vs full form testIDs differ**:
-   - Quick entry: `meal-form-quick-input`, `meal-form-quick-save-btn`, `meal-form-quick-favorites-btn`
-   - Full form: `meal-form-meal-text-input`, `meal-form-save-btn`, `meal-form-full-favorites-btn`
+    - Quick entry: `meal-form-quick-input`, `meal-form-quick-save-btn`, `meal-form-quick-favorites-btn`
+    - Full form: `meal-form-meal-text-input`, `meal-form-save-btn`, `meal-form-full-favorites-btn`
 
 ## Notes
 
-- App bundle id: `com.anonymous.mojamicha` (from app.json)
+- App bundle id: `io.github.filipbiernat.mojamicha` (from app.json)
 - Tests use `testID` props already present on interactive elements
 - Emulator name: `Medium_Phone_API_36.1`
