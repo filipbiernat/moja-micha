@@ -7,6 +7,7 @@ import {
     Switch,
     TextInput,
     Keyboard,
+    ScrollView,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme, type ThemePreference, type Theme } from "../../theme";
@@ -17,6 +18,16 @@ import {
 import { useDatabase } from "../../db";
 import { getSetting, setSetting, deleteSetting } from "../../db/settings";
 import { SETTING_KEYS } from "../../db/schema";
+import { DEFAULT_OPENAI_MODEL } from "../../services/openai";
+
+const MODEL_OPTIONS = [
+    'gpt-4o-mini',
+    'gpt-4o',
+    'gpt-4.1',
+    'gpt-4.5',
+    'gpt-5',
+    'gpt-5.2',
+] as const;
 
 export default function SettingsScreen() {
     const theme = useTheme();
@@ -43,6 +54,16 @@ export default function SettingsScreen() {
             return "";
         }
     });
+
+    // OpenAI API key state
+    const [apiKeyText, setApiKeyText] = useState<string>(() => {
+        try {
+            return getSetting(db, SETTING_KEYS.OPENAI_API_KEY) ?? "";
+        } catch {
+            return "";
+        }
+    });
+    const [apiKeyVisible, setApiKeyVisible] = useState(false);
 
     const handleToggleGoal = useCallback(
         (enabled: boolean) => {
@@ -94,6 +115,43 @@ export default function SettingsScreen() {
         [db],
     );
 
+    const handleApiKeyCommit = useCallback(
+        (text: string) => {
+            const trimmed = text.trim();
+            setApiKeyText(trimmed);
+            try {
+                if (trimmed === "") {
+                    deleteSetting(db, SETTING_KEYS.OPENAI_API_KEY);
+                } else {
+                    setSetting(db, SETTING_KEYS.OPENAI_API_KEY, trimmed);
+                }
+            } catch {
+                /* ignore */
+            }
+        },
+        [db],
+    );
+
+    const [selectedModel, setSelectedModel] = useState<string>(() => {
+        try {
+            return getSetting(db, SETTING_KEYS.OPENAI_MODEL) ?? DEFAULT_OPENAI_MODEL;
+        } catch {
+            return DEFAULT_OPENAI_MODEL;
+        }
+    });
+
+    const handleModelSelect = useCallback(
+        (model: string) => {
+            setSelectedModel(model);
+            try {
+                setSetting(db, SETTING_KEYS.OPENAI_MODEL, model);
+            } catch {
+                /* ignore */
+            }
+        },
+        [db],
+    );
+
     // Dynamic styles to properly use theme tokens without inline style spam
     const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -130,140 +188,255 @@ export default function SettingsScreen() {
                 <Text style={styles.headerTitle}>{t("settings.title")}</Text>
             </View>
 
-            {/* Theme section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionLabel}>
-                    {t("settings.theme_section")}
-                </Text>
-                <View style={styles.card}>
-                    {THEME_OPTIONS.map((option, index) => {
-                        const isActive = themePref === option.value;
-                        const isLast = index === THEME_OPTIONS.length - 1;
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+            >
+                {/* Theme section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionLabel}>
+                        {t("settings.theme_section")}
+                    </Text>
+                    <View style={styles.card}>
+                        {THEME_OPTIONS.map((option, index) => {
+                            const isActive = themePref === option.value;
+                            const isLast = index === THEME_OPTIONS.length - 1;
 
-                        return (
-                            <React.Fragment key={option.value}>
-                                <TouchableOpacity
-                                    style={styles.optionRow}
-                                    onPress={() => setThemePref(option.value)}
-                                    accessibilityLabel={`${t("settings.theme_section")}: ${option.label}`}
-                                    accessibilityRole="radio"
-                                    accessibilityState={{ checked: isActive }}
-                                >
-                                    <Text style={styles.optionEmoji}>
-                                        {option.emoji}
-                                    </Text>
-                                    <Text style={styles.optionLabel}>
-                                        {option.label}
-                                    </Text>
-                                    {isActive && (
-                                        <View style={styles.activeIndicator} />
-                                    )}
-                                </TouchableOpacity>
-                                {!isLast && <View style={styles.divider} />}
-                            </React.Fragment>
-                        );
-                    })}
+                            return (
+                                <React.Fragment key={option.value}>
+                                    <TouchableOpacity
+                                        style={styles.optionRow}
+                                        onPress={() => setThemePref(option.value)}
+                                        accessibilityLabel={`${t("settings.theme_section")}: ${option.label}`}
+                                        accessibilityRole="radio"
+                                        accessibilityState={{ checked: isActive }}
+                                    >
+                                        <Text style={styles.optionEmoji}>
+                                            {option.emoji}
+                                        </Text>
+                                        <Text style={styles.optionLabel}>
+                                            {option.label}
+                                        </Text>
+                                        {isActive && (
+                                            <View style={styles.activeIndicator} />
+                                        )}
+                                    </TouchableOpacity>
+                                    {!isLast && <View style={styles.divider} />}
+                                </React.Fragment>
+                            );
+                        })}
+                    </View>
                 </View>
-            </View>
 
-            {/* Language section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionLabel}>
-                    {t("settings.lang_section")}
-                </Text>
-                <View style={styles.card}>
-                    {LANG_OPTIONS.map((option, index) => {
-                        const isActive = langPref === option.value;
-                        const isLast = index === LANG_OPTIONS.length - 1;
+                {/* Language section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionLabel}>
+                        {t("settings.lang_section")}
+                    </Text>
+                    <View style={styles.card}>
+                        {LANG_OPTIONS.map((option, index) => {
+                            const isActive = langPref === option.value;
+                            const isLast = index === LANG_OPTIONS.length - 1;
 
-                        return (
-                            <React.Fragment key={option.value}>
-                                <TouchableOpacity
-                                    style={styles.optionRow}
-                                    onPress={() => setLangPref(option.value)}
-                                    accessibilityLabel={`${t("settings.lang_section")}: ${option.label}`}
-                                    accessibilityRole="radio"
-                                    accessibilityState={{ checked: isActive }}
-                                >
-                                    <Text style={styles.optionEmoji}>
-                                        {option.emoji}
-                                    </Text>
-                                    <Text style={styles.optionLabel}>
-                                        {option.label}
-                                    </Text>
-                                    {isActive && (
-                                        <View style={styles.activeIndicator} />
-                                    )}
-                                </TouchableOpacity>
-                                {!isLast && <View style={styles.divider} />}
-                            </React.Fragment>
-                        );
-                    })}
+                            return (
+                                <React.Fragment key={option.value}>
+                                    <TouchableOpacity
+                                        style={styles.optionRow}
+                                        onPress={() => setLangPref(option.value)}
+                                        accessibilityLabel={`${t("settings.lang_section")}: ${option.label}`}
+                                        accessibilityRole="radio"
+                                        accessibilityState={{ checked: isActive }}
+                                    >
+                                        <Text style={styles.optionEmoji}>
+                                            {option.emoji}
+                                        </Text>
+                                        <Text style={styles.optionLabel}>
+                                            {option.label}
+                                        </Text>
+                                        {isActive && (
+                                            <View style={styles.activeIndicator} />
+                                        )}
+                                    </TouchableOpacity>
+                                    {!isLast && <View style={styles.divider} />}
+                                </React.Fragment>
+                            );
+                        })}
+                    </View>
                 </View>
-            </View>
 
-            {/* Calorie goal section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionLabel}>
-                    {t("settings.calorie_goal_section")}
-                </Text>
-                <View style={styles.card}>
-                    <View style={styles.optionRow}>
-                        <Text
+                {/* Calorie goal section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionLabel}>
+                        {t("settings.calorie_goal_section")}
+                    </Text>
+                    <View style={styles.card}>
+                        <View style={styles.optionRow}>
+                            <Text
+                                style={[
+                                    styles.optionLabel,
+                                    { marginRight: theme.spacing.sm },
+                                ]}
+                            >
+                                {t("settings.calorie_goal_label")}
+                            </Text>
+                            <Switch
+                                value={goalEnabled}
+                                onValueChange={handleToggleGoal}
+                                thumbColor={
+                                    goalEnabled
+                                        ? theme.colors.primary
+                                        : theme.colors.textMuted
+                                }
+                                trackColor={{
+                                    false: theme.colors.border,
+                                    true: theme.colors.primaryMuted,
+                                }}
+                                testID="settings-calorie-goal-switch"
+                            />
+                        </View>
+                        {goalEnabled && (
+                            <>
+                                <View style={styles.divider} />
+                                <View style={styles.optionRow}>
+                                    <TextInput
+                                        style={styles.goalInput}
+                                        value={goalText}
+                                        onChangeText={setGoalText}
+                                        onSubmitEditing={() => {
+                                            handleGoalCommit(goalText);
+                                            Keyboard.dismiss();
+                                        }}
+                                        onBlur={() => handleGoalCommit(goalText)}
+                                        keyboardType="numeric"
+                                        returnKeyType="done"
+                                        placeholder={t(
+                                            "settings.calorie_goal_placeholder",
+                                        )}
+                                        placeholderTextColor={
+                                            theme.colors.textMuted
+                                        }
+                                        maxLength={5}
+                                        testID="settings-calorie-goal-input"
+                                    />
+                                    <Text style={styles.goalUnit}>
+                                        {t("settings.calorie_goal_unit")}
+                                    </Text>
+                                </View>
+                            </>
+                        )}
+                    </View>
+                </View>
+
+                {/* AI Assistant section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionLabel}>
+                        {t("settings.openai_section")}
+                    </Text>
+                    <View style={styles.card}>
+                        <View style={styles.optionRow}>
+                            <TextInput
+                                style={styles.apiKeyInput}
+                                value={apiKeyText}
+                                onChangeText={setApiKeyText}
+                                onSubmitEditing={() => {
+                                    handleApiKeyCommit(apiKeyText);
+                                    Keyboard.dismiss();
+                                }}
+                                onBlur={() => handleApiKeyCommit(apiKeyText)}
+                                secureTextEntry={!apiKeyVisible}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                returnKeyType="done"
+                                placeholder={t("settings.openai_api_key_placeholder")}
+                                placeholderTextColor={theme.colors.textMuted}
+                                testID="settings-openai-api-key-input"
+                            />
+                            <TouchableOpacity
+                                onPress={() => setApiKeyVisible((v) => !v)}
+                                accessibilityLabel={
+                                    apiKeyVisible
+                                        ? t("settings.openai_hide_key")
+                                        : t("settings.openai_show_key")
+                                }
+                                testID="settings-openai-api-key-toggle"
+                            >
+                                <Text style={styles.apiKeyToggle}>
+                                    {apiKeyVisible
+                                        ? t("settings.openai_hide_key")
+                                        : t("settings.openai_show_key")}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.divider} />
+                        <View style={styles.hintRow}>
+                            <Text style={styles.hintText}>
+                                {t("settings.openai_api_key_hint")}
+                            </Text>
+                        </View>
+                        <View style={styles.divider} />
+                        <View
                             style={[
-                                styles.optionLabel,
-                                { marginRight: theme.spacing.sm },
+                                styles.optionRow,
+                                { paddingBottom: theme.spacing.xs },
                             ]}
                         >
-                            {t("settings.calorie_goal_label")}
-                        </Text>
-                        <Switch
-                            value={goalEnabled}
-                            onValueChange={handleToggleGoal}
-                            thumbColor={
-                                goalEnabled
-                                    ? theme.colors.primary
-                                    : theme.colors.textMuted
-                            }
-                            trackColor={{
-                                false: theme.colors.border,
-                                true: theme.colors.primaryMuted,
-                            }}
-                            testID="settings-calorie-goal-switch"
-                        />
-                    </View>
-                    {goalEnabled && (
-                        <>
-                            <View style={styles.divider} />
-                            <View style={styles.optionRow}>
-                                <TextInput
-                                    style={styles.goalInput}
-                                    value={goalText}
-                                    onChangeText={setGoalText}
-                                    onSubmitEditing={() => {
-                                        handleGoalCommit(goalText);
-                                        Keyboard.dismiss();
-                                    }}
-                                    onBlur={() => handleGoalCommit(goalText)}
-                                    keyboardType="numeric"
-                                    returnKeyType="done"
-                                    placeholder={t(
-                                        "settings.calorie_goal_placeholder",
+                            <Text style={styles.optionLabel}>
+                                {t("settings.openai_model_label")}
+                            </Text>
+                        </View>
+                        {MODEL_OPTIONS.map((model, index) => {
+                            const isActive = selectedModel === model;
+                            const isLast =
+                                index === MODEL_OPTIONS.length - 1;
+                            return (
+                                <React.Fragment key={model}>
+                                    <TouchableOpacity
+                                        style={styles.optionRow}
+                                        onPress={() =>
+                                            handleModelSelect(model)
+                                        }
+                                        accessibilityRole="radio"
+                                        accessibilityState={{
+                                            checked: isActive,
+                                        }}
+                                        testID={`settings-model-${model}`}
+                                        accessibilityLabel={model}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.optionLabel,
+                                                {
+                                                    color: isActive
+                                                        ? theme.colors.primary
+                                                        : theme.colors
+                                                              .textPrimary,
+                                                    fontWeight: isActive
+                                                        ? theme.typography
+                                                              .fontWeight
+                                                              .bold
+                                                        : theme.typography
+                                                              .fontWeight
+                                                              .regular,
+                                                },
+                                            ]}
+                                        >
+                                            {model}
+                                        </Text>
+                                        {isActive && (
+                                            <View
+                                                style={styles.activeIndicator}
+                                            />
+                                        )}
+                                    </TouchableOpacity>
+                                    {!isLast && (
+                                        <View style={styles.divider} />
                                     )}
-                                    placeholderTextColor={
-                                        theme.colors.textMuted
-                                    }
-                                    maxLength={5}
-                                    testID="settings-calorie-goal-input"
-                                />
-                                <Text style={styles.goalUnit}>
-                                    {t("settings.calorie_goal_unit")}
-                                </Text>
-                            </View>
-                        </>
-                    )}
+                                </React.Fragment>
+                            );
+                        })}
+                    </View>
                 </View>
-            </View>
+            </ScrollView>
         </View>
     );
 }
@@ -275,6 +448,9 @@ const createStyles = ({ colors, typography, spacing, borderRadius }: Theme) =>
         container: {
             flex: 1,
             backgroundColor: colors.background,
+        },
+        scrollContent: {
+            paddingBottom: spacing.huge,
         },
         header: {
             // Replaced hardcoded padding/border with tokens
@@ -346,6 +522,27 @@ const createStyles = ({ colors, typography, spacing, borderRadius }: Theme) =>
             fontSize: typography.fontSize.md,
             color: colors.textMuted,
             marginLeft: spacing.xs,
+        },
+        apiKeyInput: {
+            flex: 1,
+            fontSize: typography.fontSize.md,
+            fontWeight: typography.fontWeight.regular,
+            color: colors.textPrimary,
+            paddingVertical: 0,
+        },
+        apiKeyToggle: {
+            fontSize: typography.fontSize.sm,
+            fontWeight: typography.fontWeight.semiBold,
+            color: colors.primary,
+            marginLeft: spacing.sm,
+        },
+        hintRow: {
+            paddingHorizontal: spacing.lg,
+            paddingVertical: spacing.sm,
+        },
+        hintText: {
+            fontSize: typography.fontSize.xs,
+            color: colors.textMuted,
         },
     });
 

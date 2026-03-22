@@ -112,3 +112,19 @@ Context: Emulator smoke tests after the Today screen was merged into Journal
 Problem: Existing Maestro flows still targeted the old `today-quick-entry-fab` testID, so automated emulator validation failed even though the UI worked correctly.
 Solution: Whenever a screen or navigation concept is renamed, update `.maestro/*.yaml` selectors in the same task. Smoke tests should reference current testIDs such as `journal-quick-entry-fab`.
 Discovered By: Ninja agent
+
+### 2026-03-22 — Abort in-flight async state updates with a generation ref
+
+Task: TASK-015
+Context: DayView daily AI insight — navigating to a new date while getDailyInsight is in-flight
+Problem: When the user changes dates, `loadData` resets `aiInsight` to null, but the old promise resolves after the reset and overwrites it with stale data. Standard cleanup via useEffect return value doesn't apply to ad-hoc async callbacks.
+Solution: Use a `useRef` generation counter (`insightAbortRef`). `loadData` increments it (and synchronously resets the loading spinner). The async callback captures the counter *before* the await, then compares after — skipping state updates if the counter changed. This is safe, simple, and doesn't require AbortController on the React side.
+Discovered By: Ninja agent
+
+### 2026-03-22 — module-scope constants for static option lists in Settings
+
+Task: TASK-015
+Context: SettingsScreen model selector
+Problem: Declaring a `const MODEL_OPTIONS = [...] as const` inside the component body causes it to be recreated on every render, and prevents use of `DEFAULT_OPENAI_MODEL` (imported constant) in the initializer without additional imports.
+Solution: Move static arrays to module scope (before the `export default function` line). They become stable references and can reference module imports freely.
+Discovered By: Ninja agent (code-review-subagent raised this)

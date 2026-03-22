@@ -35,7 +35,13 @@
     "calorie_goal_section": "DAILY CALORIE GOAL",
     "calorie_goal_label": "Enable calorie goal",
     "calorie_goal_placeholder": "e.g. 2000",
-    "calorie_goal_unit": "kcal"
+    "calorie_goal_unit": "kcal",
+    "openai_section": "AI ASSISTANT",
+    "openai_api_key_placeholder": "sk-...",
+    "openai_api_key_hint": "The key is stored locally on your device only.",
+    "openai_show_key": "Show",
+    "openai_hide_key": "Hide",
+    "openai_model_label": "AI Model"
   },
   "mealTypes": {
     "breakfast": "Breakfast",
@@ -62,7 +68,11 @@
     "delete_confirm_ok": "Delete",
     "delete_confirm_cancel": "Cancel",
     "btn_star": "Star this meal",
-    "btn_unstar": "Remove star"
+    "btn_unstar": "Remove star",
+    "ai_insight_btn": "Ask AI",
+    "ai_insight_loading": "Getting insight…",
+    "ai_insight_error_title": "AI Error",
+    "ai_insight_error_message": "Could not get the daily insight."
   },
   "today": {
     "quick_entry_open": "Open quick meal entry"
@@ -103,7 +113,10 @@
     "delete_confirm_cancel": "Cancel",
     "validation_required": "Meal description is required.",
     "save_error": "Could not save the meal.",
-    "delete_error": "Could not delete the meal."
+    "delete_error": "Could not delete the meal.",
+    "analyzing": "Analyzing with AI…",
+    "ai_error_title": "AI Error",
+    "ai_error_message": "Could not get AI analysis. The meal has been saved."
   },
   "favorites": {
     "tab_templates": "Templates",

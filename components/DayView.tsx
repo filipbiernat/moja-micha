@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
     ActivityIndicator,
+    Alert,
     View,
     Text,
     StyleSheet,
@@ -15,6 +16,8 @@ import { toggleStarredMeal } from "../db/favorites";
 import type { Meal } from "../db/schema";
 import { getSetting } from "../db/settings";
 import { SETTING_KEYS } from "../db/schema";
+import { getDailyInsight, DEFAULT_OPENAI_MODEL } from "../services/openai";
+import { getLocalDateString } from "../utils";
 import { useTheme } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
 import { SortCycleButton, type SortCycleOption } from "./SortCycleButton";
@@ -40,7 +43,7 @@ export function DayView({
     onCalendarToggle,
     calendarExpanded = false,
 }: DayViewProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const db = useDatabase();
     const { colors, typography, spacing, borderRadius } = useTheme();
 
@@ -49,8 +52,16 @@ export function DayView({
     const [calorieGoal, setCalorieGoal] = useState<number | null>(null);
     const [streak, setStreak] = useState<number>(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [apiKey, setApiKey] = useState<string | null>(null);
+    const [model, setModel] = useState<string>(DEFAULT_OPENAI_MODEL);
+    const [aiInsight, setAiInsight] = useState<string | null>(null);
+    const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+    const insightAbortRef = useRef(0);
 
     const loadData = useCallback(() => {
+        insightAbortRef.current += 1;
+        setAiInsight(null);
+        setIsLoadingInsight(false);
         try {
             const loadedMeals = getMealsByDate(db, date);
             setMeals(loadedMeals);
@@ -65,6 +76,12 @@ export function DayView({
 
             const currentStreak = getStreak(db);
             setStreak(currentStreak);
+
+            const keyValue = getSetting(db, SETTING_KEYS.OPENAI_API_KEY);
+            setApiKey(keyValue && keyValue.trim() !== "" ? keyValue.trim() : null);
+
+            const modelValue = getSetting(db, SETTING_KEYS.OPENAI_MODEL);
+            setModel(modelValue && modelValue.trim() !== "" ? modelValue.trim() : DEFAULT_OPENAI_MODEL);
         } catch (error) {
             console.error("Failed to load date info:", error);
         } finally {
@@ -139,6 +156,38 @@ export function DayView({
         },
         [db, loadData],
     );
+
+    const handleAskAI = useCallback(async () => {
+        if (!apiKey || meals.length === 0) return;
+        setIsLoadingInsight(true);
+        const abortId = ++insightAbortRef.current;
+        try {
+            const mealsSummary = meals
+                .map((m) => `${m.mealText}${m.calories ? ` (${m.calories} kcal)` : ""}`)
+                .join(", ");
+            const insight = await getDailyInsight(
+                apiKey,
+                mealsSummary,
+                totalKcal,
+                calorieGoal,
+                i18n.language ?? "en",
+                model,
+            );
+            if (insightAbortRef.current !== abortId) return;
+            setAiInsight(insight);
+        } catch (err: unknown) {
+            if (insightAbortRef.current !== abortId) return;
+            console.warn("Daily insight failed:", err);
+            Alert.alert(
+                t("dayView.ai_insight_error_title"),
+                t("dayView.ai_insight_error_message"),
+            );
+        } finally {
+            if (insightAbortRef.current === abortId) {
+                setIsLoadingInsight(false);
+            }
+        }
+    }, [apiKey, model, meals, totalKcal, calorieGoal, i18n.language, t]);
 
     const handlePrevDay = useCallback(() => {
         if (!onDateChange) return;
@@ -518,6 +567,88 @@ export function DayView({
                         </Text>
                     </View>
                 ) : null}
+
+                {/* AI daily insight — today only */}
+                {apiKey && meals.length > 0 && date === getLocalDateString() && (
+                    <View style={{ marginTop: spacing.sm }}>
+                        {aiInsight ? (
+                            <View
+                                style={{
+                                    backgroundColor: colors.surfaceHighlight,
+                                    borderRadius: borderRadius.md,
+                                    padding: spacing.sm,
+                                    marginTop: spacing.xs,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: colors.textPrimary,
+                                        fontSize: typography.fontSize.sm,
+                                        fontStyle: "italic",
+                                    }}
+                                >
+                                    {aiInsight}
+                                </Text>
+                            </View>
+                        ) : (
+                            <TouchableOpacity
+                                onPress={handleAskAI}
+                                disabled={isLoadingInsight}
+                                testID="dayview-ai-insight-btn"
+                                accessibilityLabel={t("dayView.ai_insight_btn")}
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    backgroundColor: colors.surface,
+                                    borderColor: colors.border,
+                                    borderWidth: 1,
+                                    borderRadius: borderRadius.md,
+                                    paddingVertical: spacing.sm,
+                                    paddingHorizontal: spacing.md,
+                                    marginTop: spacing.xs,
+                                    gap: spacing.xs,
+                                }}
+                            >
+                                {isLoadingInsight ? (
+                                    <>
+                                        <ActivityIndicator
+                                            size="small"
+                                            color={colors.primary}
+                                        />
+                                        <Text
+                                            style={{
+                                                color: colors.textSecondary,
+                                                fontSize: typography.fontSize.sm,
+                                            }}
+                                        >
+                                            {t("dayView.ai_insight_loading")}
+                                        </Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Ionicons
+                                            name="sparkles-outline"
+                                            size={14}
+                                            color={colors.primary}
+                                        />
+                                        <Text
+                                            style={{
+                                                color: colors.primary,
+                                                fontSize: typography.fontSize.sm,
+                                                fontWeight:
+                                                    typography.fontWeight
+                                                        .semiBold,
+                                            }}
+                                        >
+                                            {t("dayView.ai_insight_btn")}
+                                        </Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                )}
             </View>
 
             {/* List Controls */}

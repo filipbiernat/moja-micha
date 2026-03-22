@@ -258,11 +258,12 @@ Wszystkie zadania 0–14 powyżej.
 
 ### v2 – Integracja z OpenAI
 
-- [ ] Ekran ustawień: pole na klucz API OpenAI
-- [ ] Po zapisaniu posiłku: auto-wysyłka treści do LLM
-- [ ] Zwrot: wyliczone kalorie + analiza (uzupełniają pola automatycznie)
-- [ ] Komunikat dzienny: jak idzie względem celu kalorycznego
-- [ ] Obsługa przypadku braku sieci / błędu API
+- [x] Ekran ustawień: pole na klucz API OpenAI
+- [x] Ekran ustawień: wybór modelu AI (gpt-4o-mini … gpt-5.2)
+- [x] Po zapisaniu posiłku: auto-wysyłka treści do LLM
+- [x] Zwrot: wyliczone kalorie + analiza (uzupełniają pola automatycznie)
+- [x] Komunikat dzienny: jak idzie względem celu kalorycznego
+- [x] Obsługa przypadku braku sieci / błędu API
 
 ### v3 – Android Widget
 

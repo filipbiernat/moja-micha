@@ -30,6 +30,9 @@ import { useDatabase } from "../db/DatabaseProvider";
 import { getFavoritesByType } from "../db/favorites";
 import { createMeal, deleteMeal, getRecentUniqueMeals, updateMeal } from "../db/meals";
 import type { Favorite, Meal, MealType } from "../db/schema";
+import { SETTING_KEYS } from "../db/schema";
+import { getSetting } from "../db/settings";
+import { analyzeMeal, DEFAULT_OPENAI_MODEL } from "../services/openai";
 import { useTheme } from "../theme";
 import {
     getMealTypeForCurrentTime,
@@ -71,7 +74,7 @@ export const MealFormSheet = forwardRef<
     MealFormSheetHandle,
     MealFormSheetProps
 >(({ onSaved }, ref) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const db = useDatabase();
     const { colors, typography, spacing, borderRadius } = useTheme();
     const insets = useSafeAreaInsets();
@@ -95,6 +98,7 @@ export const MealFormSheet = forwardRef<
     // ── UI state ─────────────────────────────────────────────────────────────
     const [validationError, setValidationError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [favoritesSections, setFavoritesSections] = useState<
@@ -180,6 +184,7 @@ export const MealFormSheet = forwardRef<
     }, []);
 
     const handleSheetClose = useCallback(() => {
+        setIsAnalyzing(false);
         setValidationError(null);
         setShowDatePicker(false);
         setShowTimePicker(false);
@@ -242,6 +247,11 @@ export const MealFormSheet = forwardRef<
         }
 
         setIsSaving(true);
+        let savedMealId: number | null = null;
+        let savedDate = selectedDate;
+        let savedCalories: number | null = null;
+        let savedNotes: string | null = null;
+
         try {
             const rawCalories = calories.trim()
                 ? parseInt(calories.trim(), 10)
@@ -251,9 +261,11 @@ export const MealFormSheet = forwardRef<
                     ? rawCalories
                     : null;
             const cleanNotes = notes.trim() || null;
+            savedCalories = cleanCalories;
+            savedNotes = cleanNotes;
 
             if (mode === "add") {
-                createMeal(db, {
+                const created = createMeal(db, {
                     date: selectedDate,
                     time: selectedTime,
                     mealType,
@@ -261,6 +273,7 @@ export const MealFormSheet = forwardRef<
                     calories: cleanCalories,
                     aiAnalysis: cleanNotes,
                 });
+                savedMealId = created.id;
             } else if (editMealId !== null) {
                 updateMeal(db, editMealId, {
                     date: selectedDate,
@@ -270,16 +283,80 @@ export const MealFormSheet = forwardRef<
                     calories: cleanCalories,
                     aiAnalysis: cleanNotes,
                 });
+                savedMealId = editMealId;
             }
-
-            bottomSheetRef.current?.close();
-            onSaved(selectedDate);
         } catch (error) {
             console.error("Failed to save meal:", error);
             setValidationError(t("mealForm.save_error"));
-        } finally {
             setIsSaving(false);
+            return;
         }
+
+        setIsSaving(false);
+
+        // Check if AI enrichment is applicable:
+        // - API key must be set
+        // - At least one of calories or aiAnalysis must be empty
+        const apiKey = (() => {
+            try {
+                return getSetting(db, SETTING_KEYS.OPENAI_API_KEY);
+            } catch {
+                return null;
+            }
+        })();
+        const model = (() => {
+            try {
+                return getSetting(db, SETTING_KEYS.OPENAI_MODEL) ?? DEFAULT_OPENAI_MODEL;
+            } catch {
+                return DEFAULT_OPENAI_MODEL;
+            }
+        })();
+        const needsAi =
+            apiKey &&
+            apiKey.trim() !== "" &&
+            savedMealId !== null &&
+            mode === "add" &&
+            (savedCalories === null || savedNotes === null);
+
+        if (!needsAi) {
+            bottomSheetRef.current?.close();
+            onSaved(savedDate);
+            return;
+        }
+
+        // Run AI enrichment asynchronously, keeping sheet open
+        setIsAnalyzing(true);
+        const mealIdForAi = savedMealId!;
+
+        analyzeMeal(apiKey!, trimmed, i18n.language ?? "en", model)
+            .then((result) => {
+                const patch: { calories?: number | null; aiAnalysis?: string | null } = {};
+                if (savedCalories === null && result.calories !== null) {
+                    patch.calories = result.calories;
+                }
+                if (savedNotes === null && result.analysis !== null) {
+                    patch.aiAnalysis = result.analysis;
+                }
+                if (Object.keys(patch).length > 0) {
+                    try {
+                        updateMeal(db, mealIdForAi, patch);
+                    } catch {
+                        // ignore — meal already saved
+                    }
+                }
+            })
+            .catch((err: unknown) => {
+                console.warn("AI analysis failed:", err);
+                Alert.alert(
+                    t("mealForm.ai_error_title"),
+                    t("mealForm.ai_error_message"),
+                );
+            })
+            .finally(() => {
+                setIsAnalyzing(false);
+                bottomSheetRef.current?.close();
+                onSaved(savedDate);
+            });
     }, [
         mealText,
         calories,
@@ -292,6 +369,7 @@ export const MealFormSheet = forwardRef<
         db,
         onSaved,
         t,
+        i18n.language,
     ]);
 
     const handleDelete = useCallback(() => {
@@ -877,7 +955,7 @@ export const MealFormSheet = forwardRef<
                                 style={[
                                     styles.saveBtn,
                                     {
-                                        backgroundColor: isSaving
+                                        backgroundColor: (isSaving || isAnalyzing)
                                             ? colors.primaryMuted
                                             : colors.primary,
                                         borderRadius: borderRadius.md,
@@ -885,7 +963,7 @@ export const MealFormSheet = forwardRef<
                                     },
                                 ]}
                                 onPress={handleSave}
-                                disabled={isSaving}
+                                disabled={isSaving || isAnalyzing}
                                 activeOpacity={0.85}
                                 testID="meal-form-save-btn"
                                 accessibilityLabel={t("mealForm.btn_save")}
@@ -899,6 +977,8 @@ export const MealFormSheet = forwardRef<
                                 >
                                     {isSaving
                                         ? t("mealForm.btn_saving")
+                                        : isAnalyzing
+                                        ? t("mealForm.analyzing")
                                         : t("mealForm.btn_save")}
                                 </Text>
                             </TouchableOpacity>
@@ -1104,7 +1184,7 @@ export const MealFormSheet = forwardRef<
                                 style={[
                                     styles.quickSaveBtn,
                                     {
-                                        backgroundColor: isSaving
+                                        backgroundColor: (isSaving || isAnalyzing)
                                             ? colors.primaryMuted
                                             : colors.primary,
                                         borderRadius: borderRadius.md,
@@ -1112,7 +1192,7 @@ export const MealFormSheet = forwardRef<
                                     },
                                 ]}
                                 onPress={handleSave}
-                                disabled={isSaving}
+                                disabled={isSaving || isAnalyzing}
                                 activeOpacity={0.85}
                                 testID="meal-form-quick-save-btn"
                                 accessibilityLabel={t("mealForm.btn_save")}
@@ -1126,6 +1206,8 @@ export const MealFormSheet = forwardRef<
                                 >
                                     {isSaving
                                         ? t("mealForm.btn_saving")
+                                        : isAnalyzing
+                                        ? t("mealForm.analyzing")
                                         : t("mealForm.btn_save")}
                                 </Text>
                             </TouchableOpacity>

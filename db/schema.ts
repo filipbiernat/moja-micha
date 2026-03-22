@@ -61,6 +61,8 @@ export const SETTING_KEYS = {
     THEME: 'theme',
     LANGUAGE: 'language',
     DAILY_CALORIE_GOAL: 'daily_calorie_goal',
+    OPENAI_API_KEY: 'openai_api_key',
+    OPENAI_MODEL: 'openai_model',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];

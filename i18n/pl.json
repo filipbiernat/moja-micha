@@ -35,7 +35,13 @@
     "calorie_goal_section": "DZIENNY CEL KALORII",
     "calorie_goal_label": "Włącz cel kalorii",
     "calorie_goal_placeholder": "np. 2000",
-    "calorie_goal_unit": "kcal"
+    "calorie_goal_unit": "kcal",
+    "openai_section": "ASYSTENT AI",
+    "openai_api_key_placeholder": "sk-...",
+    "openai_api_key_hint": "Klucz jest przechowywany wyłącznie lokalnie na urządzeniu.",
+    "openai_show_key": "Pokaż",
+    "openai_hide_key": "Ukryj",
+    "openai_model_label": "Model AI"
   },
   "mealTypes": {
     "breakfast": "Śniadanie",
@@ -62,7 +68,11 @@
     "delete_confirm_ok": "Usuń",
     "delete_confirm_cancel": "Anuluj",
     "btn_star": "Oznacz gwiazdką",
-    "btn_unstar": "Usuń gwiazdkę"
+    "btn_unstar": "Usuń gwiazdkę",
+    "ai_insight_btn": "Zapytaj AI",
+    "ai_insight_loading": "Pobieranie komentarza…",
+    "ai_insight_error_title": "Błąd AI",
+    "ai_insight_error_message": "Nie udało się pobrać komentarza dziennego."
   },
   "today": {
     "quick_entry_open": "Otwórz szybki wpis posiłku"
@@ -103,7 +113,10 @@
     "delete_confirm_cancel": "Anuluj",
     "validation_required": "Opis posiłku jest wymagany.",
     "save_error": "Nie udało się zapisać posiłku.",
-    "delete_error": "Nie udało się usunąć posiłku."
+    "delete_error": "Nie udało się usunąć posiłku.",
+    "analyzing": "Analizuję z AI…",
+    "ai_error_title": "Błąd AI",
+    "ai_error_message": "Nie udało się pobrać analizy AI. Posiłek został zapisany."
   },
   "favorites": {
     "tab_templates": "Szablony",
