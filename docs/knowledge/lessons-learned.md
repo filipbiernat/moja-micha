@@ -128,3 +128,11 @@ Context: SettingsScreen model selector
 Problem: Declaring a `const MODEL_OPTIONS = [...] as const` inside the component body causes it to be recreated on every render, and prevents use of `DEFAULT_OPENAI_MODEL` (imported constant) in the initializer without additional imports.
 Solution: Move static arrays to module scope (before the `export default function` line). They become stable references and can reference module imports freely.
 Discovered By: Ninja agent (code-review-subagent raised this)
+
+### 2026-03-22 — Keep structured fallback calories synchronized with the DB column
+
+Task: TASK-016
+Context: `MealFormSheet` save/edit flow for structured `meals.ai_analysis`
+Problem: When `ai_analysis` stores structured fallback calories, it is easy to create a hidden second calorie state that diverges from `meals.calories` during manual edits or AI enrichment.
+Solution: Treat the value being persisted to `meals.calories` as the single source of truth and serialize that same value into structured `ai_analysis`. In edit mode, prefill the calories input from the effective value (`meal.calories ?? parsedAiAnalysis.calories`) so clearing calories can remove both sources consistently.
+Discovered By: Ninja agent

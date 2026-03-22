@@ -24,6 +24,7 @@ import { getSetting } from "../db/settings";
 import { SETTING_KEYS } from "../db/schema";
 import { getDailyInsight, DEFAULT_OPENAI_MODEL } from "../services/openai";
 import { getLocalDateString } from "../utils";
+import { parseMealAnalysisValue } from "../utils/mealAnalysis";
 import { useTheme } from "../theme";
 import { Ionicons } from "@expo/vector-icons";
 import { SortCycleButton, type SortCycleOption } from "./SortCycleButton";
@@ -62,12 +63,16 @@ export function DayView({
     const [model, setModel] = useState<string>(DEFAULT_OPENAI_MODEL);
     const [aiInsight, setAiInsight] = useState<string | null>(null);
     const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+    const [expandedIngredientMeals, setExpandedIngredientMeals] = useState<
+        Record<number, boolean>
+    >({});
     const insightAbortRef = useRef(0);
 
     const loadData = useCallback(() => {
         insightAbortRef.current += 1;
         setAiInsight(null);
         setIsLoadingInsight(false);
+        setExpandedIngredientMeals({});
         try {
             const loadedMeals = getMealsByDate(db, date);
             setMeals(loadedMeals);
@@ -105,9 +110,16 @@ export function DayView({
         loadData();
     }, [loadData, reloadKey]);
 
+    const getEffectiveCalories = useCallback((meal: Meal) => {
+        return meal.calories ?? parseMealAnalysisValue(meal.aiAnalysis).calories;
+    }, []);
+
     const totalKcal = useMemo(() => {
-        return meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
-    }, [meals]);
+        return meals.reduce(
+            (sum, meal) => sum + (getEffectiveCalories(meal) ?? 0),
+            0,
+        );
+    }, [getEffectiveCalories, meals]);
 
     const sortOptions = useMemo<ReadonlyArray<SortCycleOption<MealSortOrder>>>(
         () => [
@@ -158,7 +170,7 @@ export function DayView({
                     meal.id,
                     meal.mealText, // name (Meal has no separate name field)
                     meal.mealText,
-                    meal.calories,
+                    getEffectiveCalories(meal),
                 );
                 setMealStarred(db, meal.id, newStarred);
                 loadData();
@@ -166,8 +178,15 @@ export function DayView({
                 console.error("Failed to toggle star:", error);
             }
         },
-        [db, loadData],
+        [db, getEffectiveCalories, loadData],
     );
+
+    const handleIngredientToggle = useCallback((mealId: number) => {
+        setExpandedIngredientMeals((current) => ({
+            ...current,
+            [mealId]: !current[mealId],
+        }));
+    }, []);
 
     const handleAskAI = useCallback(async () => {
         if (!apiKey || meals.length === 0) return;
@@ -176,8 +195,11 @@ export function DayView({
         try {
             const mealsSummary = meals
                 .map(
-                    (m) =>
-                        `${m.mealText}${m.calories ? ` (${m.calories} kcal)` : ""}`,
+                    (m) => {
+                        const effectiveCalories = getEffectiveCalories(m);
+
+                        return `${m.mealText}${effectiveCalories !== null ? ` (${effectiveCalories} kcal)` : ""}`;
+                    },
                 )
                 .join(", ");
             const insight = await getDailyInsight(
@@ -202,7 +224,16 @@ export function DayView({
                 setIsLoadingInsight(false);
             }
         }
-    }, [apiKey, model, meals, totalKcal, calorieGoal, i18n.language, t]);
+    }, [
+        apiKey,
+        model,
+        meals,
+        totalKcal,
+        calorieGoal,
+        i18n.language,
+        t,
+        getEffectiveCalories,
+    ]);
 
     const handlePrevDay = useCallback(() => {
         if (!onDateChange) return;
@@ -244,100 +275,204 @@ export function DayView({
         [handlePrevDay, handleNextDay],
     );
 
-    const renderMeal = ({ item }: { item: Meal }) => (
-        <View
-            testID={`meal-card-${item.id}`}
-            style={[
-                styles.mealCard,
-                {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                    borderRadius: borderRadius.md,
-                },
-            ]}
-        >
-            {/* Tappable main body */}
-            <TouchableOpacity
-                onPress={onMealPress ? () => onMealPress(item) : undefined}
-                activeOpacity={onMealPress ? 0.7 : 1}
-                accessibilityLabel={item.mealText}
-                style={styles.mealBody}
+    const renderMeal = ({ item }: { item: Meal }) => {
+        const parsedAiAnalysis = parseMealAnalysisValue(item.aiAnalysis);
+        const displayCalories = item.calories ?? parsedAiAnalysis.calories;
+        const ingredientCount = parsedAiAnalysis.ingredients?.length ?? 0;
+        const ingredientsExpanded = expandedIngredientMeals[item.id] ?? false;
+
+        return (
+            <View
+                testID={`meal-card-${item.id}`}
+                style={[
+                    styles.mealCard,
+                    {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                        borderRadius: borderRadius.md,
+                    },
+                ]}
             >
-                <View style={styles.mealHeader}>
-                    <Text
-                        style={{
-                            color: colors.primary,
-                            fontSize: typography.fontSize.xs,
-                            fontWeight: typography.fontWeight.bold,
-                        }}
-                    >
-                        {t(`mealTypes.${item.mealType}`, {
-                            defaultValue: item.mealType,
-                        }).toUpperCase()}
-                    </Text>
-                    <Text
-                        style={{
-                            color: colors.textSecondary,
-                            fontSize: typography.fontSize.xs,
-                        }}
-                    >
-                        {item.time}
-                    </Text>
-                </View>
-                <Text
-                    style={{
-                        color: colors.textPrimary,
-                        fontSize: typography.fontSize.md,
-                    }}
+                {/* Tappable main body */}
+                <TouchableOpacity
+                    onPress={onMealPress ? () => onMealPress(item) : undefined}
+                    activeOpacity={onMealPress ? 0.7 : 1}
+                    accessibilityLabel={item.mealText}
+                    style={styles.mealBody}
                 >
-                    {item.mealText}
-                </Text>
-                {item.calories ? (
+                    <View style={styles.mealHeader}>
+                        <Text
+                            style={{
+                                color: colors.primary,
+                                fontSize: typography.fontSize.xs,
+                                fontWeight: typography.fontWeight.bold,
+                            }}
+                        >
+                            {t(`mealTypes.${item.mealType}`, {
+                                defaultValue: item.mealType,
+                            }).toUpperCase()}
+                        </Text>
+                        <Text
+                            style={{
+                                color: colors.textSecondary,
+                                fontSize: typography.fontSize.xs,
+                            }}
+                        >
+                            {item.time}
+                        </Text>
+                    </View>
                     <Text
                         style={{
-                            color: colors.secondary,
+                            color: colors.textPrimary,
                             fontSize: typography.fontSize.md,
-                            marginTop: spacing.xs,
-                            fontWeight: typography.fontWeight.bold,
                         }}
                     >
-                        {item.calories} {t("common.kcal_unit")}
+                        {item.mealText}
                     </Text>
-                ) : null}
-                {item.aiAnalysis ? (
-                    <Text
-                        style={{
-                            color: colors.textSecondary,
-                            fontSize: typography.fontSize.xs,
-                            marginTop: spacing.xs,
-                            fontStyle: "italic",
-                        }}
-                    >
-                        {item.aiAnalysis}
-                    </Text>
-                ) : null}
-            </TouchableOpacity>
-            {/* Star button */}
-            <TouchableOpacity
-                testID={`meal-star-btn-${item.id}`}
-                accessibilityLabel={
-                    item.isStarred === 1
-                        ? t("dayView.btn_unstar")
-                        : t("dayView.btn_star")
-                }
-                onPress={() => handleStarToggle(item)}
-                style={styles.starBtn}
-            >
-                <Ionicons
-                    name={item.isStarred === 1 ? "star" : "star-outline"}
-                    size={20}
-                    color={
-                        item.isStarred === 1 ? colors.star : colors.textMuted
+                    {displayCalories !== null ? (
+                        <Text
+                            style={{
+                                color: colors.secondary,
+                                fontSize: typography.fontSize.md,
+                                marginTop: spacing.xs,
+                                fontWeight: typography.fontWeight.bold,
+                            }}
+                        >
+                            {displayCalories} {t("common.kcal_unit")}
+                        </Text>
+                    ) : null}
+                    {ingredientCount > 0 ? (
+                        <View style={{ marginTop: spacing.sm }}>
+                            <TouchableOpacity
+                                testID={`meal-ingredients-toggle-${item.id}`}
+                                accessibilityLabel={
+                                    ingredientsExpanded
+                                        ? t("dayView.ingredients_hide")
+                                        : t("dayView.ingredients_show")
+                                }
+                                onPress={() => handleIngredientToggle(item.id)}
+                                style={[
+                                    styles.ingredientToggle,
+                                    {
+                                        borderColor: colors.border,
+                                        borderRadius: borderRadius.sm,
+                                        backgroundColor: colors.surfaceElevated,
+                                    },
+                                ]}
+                            >
+                                <View>
+                                    <Text
+                                        style={{
+                                            color: colors.textSecondary,
+                                            fontSize: typography.fontSize.xs,
+                                            fontWeight:
+                                                typography.fontWeight.semiBold,
+                                            textTransform: "uppercase",
+                                        }}
+                                    >
+                                        {t("dayView.ingredients_title")}
+                                    </Text>
+                                    <Text
+                                        style={{
+                                            color: colors.primary,
+                                            fontSize: typography.fontSize.sm,
+                                            fontWeight:
+                                                typography.fontWeight.semiBold,
+                                                marginTop: spacing.xs,
+                                        }}
+                                    >
+                                        {ingredientsExpanded
+                                            ? t("dayView.ingredients_hide")
+                                            : t("dayView.ingredients_show")} ({ingredientCount})
+                                    </Text>
+                                </View>
+                                <Ionicons
+                                    name={
+                                        ingredientsExpanded
+                                            ? "chevron-up"
+                                            : "chevron-down"
+                                    }
+                                    size={16}
+                                    color={colors.primary}
+                                />
+                            </TouchableOpacity>
+                            {ingredientsExpanded && parsedAiAnalysis.ingredients ? (
+                                <View
+                                    style={[
+                                        styles.ingredientList,
+                                        {
+                                            borderColor: colors.border,
+                                            borderRadius: borderRadius.sm,
+                                            backgroundColor: colors.background,
+                                        },
+                                    ]}
+                                >
+                                    {parsedAiAnalysis.ingredients.map((ingredient) => (
+                                        <View
+                                            key={`${item.id}-${ingredient.name}`}
+                                            style={styles.ingredientRow}
+                                        >
+                                            <Text
+                                                style={{
+                                                    color: colors.textPrimary,
+                                                    fontSize: typography.fontSize.sm,
+                                                    flex: 1,
+                                                }}
+                                            >
+                                                {ingredient.name}
+                                            </Text>
+                                            <Text
+                                                style={{
+                                                    color: colors.textSecondary,
+                                                    fontSize: typography.fontSize.sm,
+                                                    fontWeight:
+                                                        typography.fontWeight
+                                                            .semiBold,
+                                                }}
+                                            >
+                                                {ingredient.calories} {t("common.kcal_unit")}
+                                            </Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            ) : null}
+                        </View>
+                    ) : null}
+                    {parsedAiAnalysis.analysis ? (
+                        <Text
+                            style={{
+                                color: colors.textSecondary,
+                                fontSize: typography.fontSize.xs,
+                                marginTop: spacing.xs,
+                                fontStyle: "italic",
+                            }}
+                        >
+                            {parsedAiAnalysis.analysis}
+                        </Text>
+                    ) : null}
+                </TouchableOpacity>
+                {/* Star button */}
+                <TouchableOpacity
+                    testID={`meal-star-btn-${item.id}`}
+                    accessibilityLabel={
+                        item.isStarred === 1
+                            ? t("dayView.btn_unstar")
+                            : t("dayView.btn_star")
                     }
-                />
-            </TouchableOpacity>
-        </View>
-    );
+                    onPress={() => handleStarToggle(item)}
+                    style={styles.starBtn}
+                >
+                    <Ionicons
+                        name={item.isStarred === 1 ? "star" : "star-outline"}
+                        size={20}
+                        color={
+                            item.isStarred === 1 ? colors.star : colors.textMuted
+                        }
+                    />
+                </TouchableOpacity>
+            </View>
+        );
+    };
 
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
@@ -804,6 +939,27 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         marginBottom: 4,
+    },
+    ingredientToggle: {
+        borderWidth: 1,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+    ingredientList: {
+        borderWidth: 1,
+        marginTop: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        gap: 8,
+    },
+    ingredientRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
     },
     emptyContainer: {
         flex: 1,

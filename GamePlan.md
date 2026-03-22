@@ -269,12 +269,12 @@ Wszystkie zadania 0–14 powyżej.
 
 Rozszerzenie analizy AI: zamiast zwracać tylko łączną liczbę kalorii, model rozkłada posiłek na składniki i szacuje kalorie dla każdego z nich.
 
-- [ ] Rozszerzenie `MealAnalysis` o pole `ingredients: Array<{ name: string; calories: number }> | null`
-- [ ] Aktualizacja system promptu w `analyzeMeal` — model zwraca JSON z polami `ingredients`, `calories` (suma), `analysis`
-- [ ] Aktualizacja parsowania odpowiedzi i walidacji w `analyzeMeal`
-- [ ] Wyświetlenie rozbicia na składniki w widoku posiłku (zwijana lista pod sumą kalorii)
-- [ ] Tłumaczenia PL/EN dla nowych elementów UI (nagłówek listy składników, etykiety)
-- [ ] Obsługa przypadku gdy model nie zwróci `ingredients` (graceful fallback do dotychczasowego widoku)
+- [x] Rozszerzenie `MealAnalysis` o pole `ingredients: Array<{ name: string; calories: number }> | null`
+- [x] Aktualizacja system promptu w `analyzeMeal` — model zwraca JSON z polami `ingredients`, `calories` (suma), `analysis`
+- [x] Aktualizacja parsowania odpowiedzi i walidacji w `analyzeMeal`
+- [x] Wyświetlenie rozbicia na składniki w widoku posiłku (zwijana lista pod sumą kalorii)
+- [x] Tłumaczenia PL/EN dla nowych elementów UI (nagłówek listy składników, etykiety)
+- [x] Obsługa przypadku gdy model nie zwróci `ingredients` (graceful fallback do dotychczasowego widoku)
 
 ### v2.2 – Dzienne podsumowanie AI (Dietitian Summary)
 

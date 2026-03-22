@@ -9,9 +9,53 @@ const TIMEOUT_MS = 30_000;
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
+export interface MealAnalysisIngredient {
+    name: string;
+    calories: number;
+}
+
 export interface MealAnalysis {
     calories: number | null;
     analysis: string | null;
+    ingredients: MealAnalysisIngredient[] | null;
+}
+
+function parseCalories(value: unknown): number | null {
+    return typeof value === 'number' && Number.isFinite(value)
+        ? Math.max(0, Math.round(value))
+        : null;
+}
+
+function parseIngredients(value: unknown): MealAnalysisIngredient[] | null {
+    if (!Array.isArray(value)) {
+        return null;
+    }
+
+    const normalized = value
+        .map((ingredient) => {
+            if (!ingredient || typeof ingredient !== 'object') {
+                return null;
+            }
+
+            const candidate = ingredient as {
+                name?: unknown;
+                calories?: unknown;
+            };
+            const name =
+                typeof candidate.name === 'string' ? candidate.name.trim() : '';
+            const calories = parseCalories(candidate.calories);
+
+            if (!name || calories === null) {
+                return null;
+            }
+
+            return { name, calories };
+        })
+        .filter(
+            (ingredient): ingredient is MealAnalysisIngredient => ingredient !== null,
+        );
+
+    return normalized.length > 0 ? normalized : null;
 }
 
 // ─── Internal fetch helper ─────────────────────────────────────────────────
@@ -97,8 +141,9 @@ export async function analyzeMeal(
             {
                 role: 'system',
                 content:
-                    `You are a nutrition expert. Analyze the meal description and return ONLY a JSON object with exactly two fields: ` +
-                    `"calories" (integer, estimated total kcal, or null if you cannot reliably estimate) and ` +
+                    `You are a nutrition expert. Analyze the meal description and return ONLY a JSON object with exactly three fields: ` +
+                    `"ingredients" (an array of objects with "name" and "calories", or null if you cannot break the meal down reliably), ` +
+                    `"calories" (integer, estimated total kcal, ideally matching the ingredient sum, or null if you cannot reliably estimate), and ` +
                     `"analysis" (string, a concise 1–2 sentence nutritional note, or null). ` +
                     `${langInstruction} Return nothing else — no markdown, no explanation.`,
             },
@@ -117,15 +162,14 @@ export async function analyzeMeal(
         throw new Error('json_parse_error');
     }
     const calories =
-        typeof parsed.calories === 'number' && Number.isFinite(parsed.calories)
-            ? Math.round(parsed.calories)
-            : null;
+        parseCalories(parsed.calories);
     const analysis =
         typeof parsed.analysis === 'string' && parsed.analysis.trim() !== ''
             ? parsed.analysis.trim()
             : null;
+    const ingredients = parseIngredients(parsed.ingredients);
 
-    return { calories, analysis };
+    return { calories, analysis, ingredients };
 }
 
 /**

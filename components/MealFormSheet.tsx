@@ -40,6 +40,10 @@ import { getSetting } from "../db/settings";
 import { analyzeMeal, DEFAULT_OPENAI_MODEL } from "../services/openai";
 import { useTheme } from "../theme";
 import {
+    parseMealAnalysisValue,
+    serializeMealAnalysisValue,
+} from "../utils/mealAnalysis";
+import {
     getMealTypeForCurrentTime,
     getLocalDateString,
     getLocalTimeString,
@@ -111,6 +115,14 @@ export const MealFormSheet = forwardRef<
     >([]);
     const [showFavoritesPicker, setShowFavoritesPicker] = useState(false);
     const [recentSuggestions, setRecentSuggestions] = useState<string[]>([]);
+    const [originalAiAnalysisValue, setOriginalAiAnalysisValue] = useState<
+        string | null
+    >(null);
+    const [originalAnalysisText, setOriginalAnalysisText] = useState<
+        string | null
+    >(null);
+    const [originalAiAnalysisWasStructured, setOriginalAiAnalysisWasStructured] =
+        useState(false);
 
     // ── Computed suggestions ─────────────────────────────────────────────────
     const filteredSuggestions = useMemo(() => {
@@ -131,6 +143,9 @@ export const MealFormSheet = forwardRef<
             setSelectedTime(getLocalTimeString());
             setCalories("");
             setNotes("");
+            setOriginalAiAnalysisValue(null);
+            setOriginalAnalysisText(null);
+            setOriginalAiAnalysisWasStructured(false);
             setValidationError(null);
             setShowDatePicker(false);
             setShowTimePicker(false);
@@ -148,14 +163,19 @@ export const MealFormSheet = forwardRef<
             bottomSheetRef.current?.snapToIndex(SNAP_QUICK);
         },
         openEdit: (meal) => {
+            const parsedAiAnalysis = parseMealAnalysisValue(meal.aiAnalysis);
             setMode("edit");
             setEditMealId(meal.id);
             setMealText(meal.mealText);
             setMealType(meal.mealType as MealType);
             setSelectedDate(meal.date);
             setSelectedTime(meal.time);
-            setCalories(meal.calories?.toString() ?? "");
-            setNotes(meal.aiAnalysis ?? "");
+            const effectiveCalories = meal.calories ?? parsedAiAnalysis.calories;
+            setCalories(effectiveCalories?.toString() ?? "");
+            setNotes(parsedAiAnalysis.analysis ?? "");
+            setOriginalAiAnalysisValue(parsedAiAnalysis.rawValue);
+            setOriginalAnalysisText(parsedAiAnalysis.analysis);
+            setOriginalAiAnalysisWasStructured(parsedAiAnalysis.isStructured);
             setValidationError(null);
             setShowDatePicker(false);
             setShowTimePicker(false);
@@ -264,6 +284,26 @@ export const MealFormSheet = forwardRef<
                     ? rawCalories
                     : null;
             const cleanNotes = notes.trim() || null;
+            const originalStructuredAnalysis =
+                originalAiAnalysisWasStructured && originalAiAnalysisValue
+                    ? parseMealAnalysisValue(originalAiAnalysisValue)
+                    : null;
+            const shouldPreserveOriginalStructuredValue =
+                mode === "edit" &&
+                originalStructuredAnalysis?.isStructured &&
+                cleanNotes === originalAnalysisText &&
+                cleanCalories === originalStructuredAnalysis.calories;
+            const nextAiAnalysisValue =
+                shouldPreserveOriginalStructuredValue
+                    ? originalAiAnalysisValue
+                    : mode === "edit" &&
+                        originalStructuredAnalysis?.isStructured
+                      ? serializeMealAnalysisValue({
+                            analysis: cleanNotes,
+                            calories: cleanCalories,
+                            ingredients: originalStructuredAnalysis.ingredients,
+                        })
+                    : cleanNotes;
             savedCalories = cleanCalories;
             savedNotes = cleanNotes;
 
@@ -274,7 +314,7 @@ export const MealFormSheet = forwardRef<
                     mealType,
                     mealText: trimmed,
                     calories: cleanCalories,
-                    aiAnalysis: cleanNotes,
+                    aiAnalysis: nextAiAnalysisValue,
                 });
                 savedMealId = created.id;
             } else if (editMealId !== null) {
@@ -284,7 +324,7 @@ export const MealFormSheet = forwardRef<
                     mealType,
                     mealText: trimmed,
                     calories: cleanCalories,
-                    aiAnalysis: cleanNotes,
+                    aiAnalysis: nextAiAnalysisValue,
                 });
                 savedMealId = editMealId;
             }
@@ -343,8 +383,15 @@ export const MealFormSheet = forwardRef<
                 if (savedCalories === null && result.calories !== null) {
                     patch.calories = result.calories;
                 }
-                if (savedNotes === null && result.analysis !== null) {
-                    patch.aiAnalysis = result.analysis;
+                if (
+                    result.ingredients !== null ||
+                    (savedNotes === null && result.analysis !== null)
+                ) {
+                    patch.aiAnalysis = serializeMealAnalysisValue({
+                        analysis: savedNotes ?? result.analysis,
+                        calories: savedCalories ?? result.calories,
+                        ingredients: result.ingredients,
+                    });
                 }
                 if (Object.keys(patch).length > 0) {
                     try {
@@ -379,6 +426,9 @@ export const MealFormSheet = forwardRef<
         onSaved,
         t,
         i18n.language,
+        originalAiAnalysisValue,
+        originalAiAnalysisWasStructured,
+        originalAnalysisText,
     ]);
 
     const handleDelete = useCallback(() => {
