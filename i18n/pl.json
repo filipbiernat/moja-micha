@@ -52,7 +52,20 @@
     "openai_api_key_hint": "Klucz jest przechowywany wyłącznie lokalnie na urządzeniu.",
     "openai_show_key": "Pokaż",
     "openai_hide_key": "Ukryj",
-    "openai_model_label": "Model AI"
+    "openai_model_label": "Model AI",
+    "data_section": "DANE",
+    "export_btn": "Eksportuj dane do pliku JSON",
+    "export_hint": "Udostępnia plik z posiłkami, ulubionymi i ustawieniami (bez klucza API).",
+    "import_btn": "Importuj dane z pliku JSON",
+    "import_hint": "Przywraca dane z kopii zapasowej. Obecne posiłki i ulubione zostaną zastąpione.",
+    "export_error": "Nie udało się wyeksportować danych.",
+    "import_confirm_title": "Importuj dane",
+    "import_confirm_message": "Ta operacja zastąpi wszystkie obecne posiłki, ulubione i ustawienia (z wyjątkiem klucza API). Kontynuować?",
+    "import_confirm_ok": "Importuj",
+    "import_confirm_cancel": "Anuluj",
+    "import_success": "Dane zostały pomyślnie zaimportowane.",
+    "import_error": "Nie udało się zaimportować danych.",
+    "import_invalid": "Wybrany plik nie jest prawidłową kopią zapasową Moja Micha."
   },
   "mealTypes": {
     "breakfast": "Śniadanie",

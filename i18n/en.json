@@ -52,7 +52,20 @@
     "openai_api_key_hint": "The key is stored locally on your device only.",
     "openai_show_key": "Show",
     "openai_hide_key": "Hide",
-    "openai_model_label": "AI Model"
+    "openai_model_label": "AI Model",
+    "data_section": "DATA",
+    "export_btn": "Export data to JSON file",
+    "export_hint": "Shares a file with meals, favorites and settings (excluding API key).",
+    "import_btn": "Import data from JSON file",
+    "import_hint": "Restores data from a backup. Existing meals and favorites will be replaced.",
+    "export_error": "Could not export data.",
+    "import_confirm_title": "Import data",
+    "import_confirm_message": "This will replace all current meals, favorites and settings (except the API key). Continue?",
+    "import_confirm_ok": "Import",
+    "import_confirm_cancel": "Cancel",
+    "import_success": "Data imported successfully.",
+    "import_error": "Could not import data.",
+    "import_invalid": "The selected file is not a valid Moja Micha backup."
   },
   "mealTypes": {
     "breakfast": "Breakfast",

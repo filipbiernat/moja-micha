@@ -8,6 +8,8 @@ import {
     TextInput,
     Keyboard,
     ScrollView,
+    Alert,
+    ActivityIndicator,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme, type ThemePreference, type Theme } from "../../theme";
@@ -19,6 +21,12 @@ import { useDatabase } from "../../db";
 import { getSetting, setSetting, deleteSetting } from "../../db/settings";
 import { SETTING_KEYS, type DietGoal, type UserSex } from "../../db/schema";
 import { DEFAULT_OPENAI_MODEL } from "../../services/openai";
+import {
+    exportData,
+    pickAndParseBackup,
+    restoreFromBackup,
+    CancelledError,
+} from "../../services/dataExport";
 
 const MODEL_OPTIONS = [
     "gpt-4o-mini",
@@ -239,6 +247,64 @@ export default function SettingsScreen() {
         },
         [db],
     );
+
+    // ─── Data export / import ────────────────────────────────
+    const [isExporting, setIsExporting] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+
+    const handleExport = useCallback(async () => {
+        setIsExporting(true);
+        try {
+            await exportData(db);
+        } catch {
+            Alert.alert(t("settings.export_error"));
+        } finally {
+            setIsExporting(false);
+        }
+    }, [db, t]);
+
+    const handleImport = useCallback(async () => {
+        setIsImporting(true);
+        let backup;
+        try {
+            backup = await pickAndParseBackup();
+        } catch (err) {
+            setIsImporting(false);
+            if (err instanceof CancelledError) return;
+            Alert.alert(t("settings.import_invalid"));
+            return;
+        }
+
+        // Show confirmation before destructive restore.
+        // cancelable:false prevents the hardware back button from leaving
+        // isImporting stuck at true.
+        Alert.alert(
+            t("settings.import_confirm_title"),
+            t("settings.import_confirm_message"),
+            [
+                {
+                    text: t("settings.import_confirm_cancel"),
+                    style: "cancel",
+                    onPress: () => setIsImporting(false),
+                },
+                {
+                    text: t("settings.import_confirm_ok"),
+                    style: "destructive",
+                    onPress: () => {
+                        try {
+                            restoreFromBackup(db, backup!);
+                            Alert.alert(t("settings.import_success"));
+                        } catch {
+                            Alert.alert(t("settings.import_error"));
+                        } finally {
+                            setIsImporting(false);
+                        }
+                    },
+                },
+            ],
+            { cancelable: false },
+        );
+    }, [db, t]);
 
     // Dynamic styles to properly use theme tokens without inline style spam
     const styles = useMemo(() => createStyles(theme), [theme]);
@@ -669,6 +735,66 @@ export default function SettingsScreen() {
                                 </React.Fragment>
                             );
                         })}
+                    </View>
+                </View>
+
+                {/* Data export / import section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionLabel}>
+                        {t("settings.data_section")}
+                    </Text>
+                    <View style={styles.card}>
+                        {/* Export row */}
+                        <TouchableOpacity
+                            style={styles.optionRow}
+                            onPress={handleExport}
+                            disabled={isExporting || isImporting}
+                            accessibilityLabel={t("settings.export_btn")}
+                            testID="settings-export-btn"
+                        >
+                            <Text style={styles.optionEmoji}>📤</Text>
+                            <Text style={styles.optionLabel}>
+                                {t("settings.export_btn")}
+                            </Text>
+                            {isExporting && (
+                                <ActivityIndicator
+                                    size="small"
+                                    color={theme.colors.primary}
+                                />
+                            )}
+                        </TouchableOpacity>
+                        <View style={styles.hintRow}>
+                            <Text style={styles.hintText}>
+                                {t("settings.export_hint")}
+                            </Text>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        {/* Import row */}
+                        <TouchableOpacity
+                            style={styles.optionRow}
+                            onPress={handleImport}
+                            disabled={isExporting || isImporting}
+                            accessibilityLabel={t("settings.import_btn")}
+                            testID="settings-import-btn"
+                        >
+                            <Text style={styles.optionEmoji}>📥</Text>
+                            <Text style={styles.optionLabel}>
+                                {t("settings.import_btn")}
+                            </Text>
+                            {isImporting && (
+                                <ActivityIndicator
+                                    size="small"
+                                    color={theme.colors.primary}
+                                />
+                            )}
+                        </TouchableOpacity>
+                        <View style={styles.hintRow}>
+                            <Text style={styles.hintText}>
+                                {t("settings.import_hint")}
+                            </Text>
+                        </View>
                     </View>
                 </View>
             </ScrollView>
