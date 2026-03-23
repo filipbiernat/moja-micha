@@ -308,11 +308,11 @@ Analiza całego dnia przez model pełniący rolę dietetyka. Motywująca, profes
 
 ### v3 – Android Widget
 
-- [ ] Widget 1×1 na ekranie głównym Androida
-- [ ] Jedno kliknięcie → uruchamia aplikację z otwartym bottom sheetem (szybki wpis)
+- [x] Widget 1×1 na ekranie głównym Androida
+- [x] Jedno kliknięcie → uruchamia aplikację z otwartym bottom sheetem (szybki wpis)
 - [ ] Opcjonalnie: uruchomienie mikrofonu GBoard bezpośrednio z widgetu
-- [ ] Implementacja: `react-native-android-widget`
+- [x] Implementacja: `react-native-android-widget`
 
 ---
 
-_Ostatnia aktualizacja: 2026-03-22_
+_Ostatnia aktualizacja: 2026-03-23_

@@ -152,3 +152,26 @@ Context: `DayView` mounted child cards with local expand/collapse state
 Problem: A child component such as `DailySummaryCard` can preserve local UI state across date navigation if React reuses the same instance while only props change.
 Solution: When the UX requirement is “default state per date”, key the child by the viewed date (or reset local state from an explicit date-scoped prop) so expand/collapse does not leak between days.
 Discovered By: Ninja agent
+### 2026-03-23 — expo prebuild must be run explicitly when android/ already exists
+
+Task: TASK-018
+Context: Adding react-native-android-widget (config plugin) to an Expo project with existing android/ directory
+Problem: `npx expo run:android` skips prebuild if `android/` already exists. The `react-native-android-widget` config plugin therefore never runs, so no widget receiver is added to AndroidManifest.xml and no widget provider XML is generated.
+Solution: Run `npx expo prebuild --platform android --no-install` explicitly after adding a new config plugin to force regeneration of the android/ files. Then run `npx expo run:android` to build.
+Discovered By: Ninja agent
+
+### 2026-03-23 — react-native-android-widget deep link uses OPEN_URI clickAction
+
+Task: TASK-018
+Context: Android widget clicking to open app with a specific screen
+Problem: `OPEN_APP` clickAction in widget components opens the app launch intent with no way to pass extra data. This opens the app at its default state without routing anywhere specific.
+Solution: Use `clickAction="OPEN_URI"` with `clickActionData={{ uri: "mojamicha://quick-entry" }}` on the FlexWidget root. This sends an Android VIEW intent with the URI, which is intercepted by React Navigation's `linking` config or by `Linking.addEventListener` in JournalScreen to trigger the form sheet.
+Discovered By: Ninja agent
+
+### 2026-03-23 — JSX not allowed in .ts files; use factory function pattern
+
+Task: TASK-018
+Context: widgetTaskHandler.ts (headless task) needing to render widget components
+Problem: A `.ts` file cannot contain JSX syntax. Trying to create `<QuickEntryWidget />` inline in the task handler fails with TS1005.
+Solution: Export a factory function `createQuickEntryWidgetRepresentation()` from the `.tsx` widget file that builds and returns `{ light: JSX.Element, dark: JSX.Element }`. The `.ts` task handler calls this factory without touching JSX. No React import needed in the handler file.
+Discovered By: Ninja agent

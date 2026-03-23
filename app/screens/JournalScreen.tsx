@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import {
     Animated,
+    Linking,
     Modal,
     StyleSheet,
     Text,
@@ -88,6 +89,10 @@ export default function JournalScreen() {
         Record<string, { marked: boolean; dotColor: string }>
     >({});
     const [refreshKey, setRefreshKey] = useState(0);
+
+    // ─── Widget deep-link: pending quick entry ────────────────────────────────
+
+    const [pendingQuickEntry, setPendingQuickEntry] = useState(false);
 
     // ─── Calendar expand / collapse ───────────────────────────────────────────
 
@@ -178,6 +183,36 @@ export default function JournalScreen() {
         setVisibleMonthKey(savedDate.substring(0, 7) + "-01");
         setRefreshKey((prev) => prev + 1);
     }, []);
+
+    // ─── Widget deep-link: listen for mojamicha://quick-entry ────────────────
+
+    useEffect(() => {
+        // Check if app was cold-started via the deep link URL
+        Linking.getInitialURL().then((url) => {
+            if (url?.startsWith("mojamicha://quick-entry")) {
+                setPendingQuickEntry(true);
+            }
+        });
+
+        // Listen for the link while app is running in background
+        const subscription = Linking.addEventListener("url", ({ url }) => {
+            if (url.startsWith("mojamicha://quick-entry")) {
+                setPendingQuickEntry(true);
+            }
+        });
+
+        return () => subscription.remove();
+    }, []);
+
+    // Open the form sheet once the flag is set (defer so the sheet is mounted)
+    useEffect(() => {
+        if (!pendingQuickEntry) return;
+        const timer = setTimeout(() => {
+            handleOpenAdd();
+            setPendingQuickEntry(false);
+        }, 350);
+        return () => clearTimeout(timer);
+    }, [pendingQuickEntry, handleOpenAdd]);
 
     // ─── Focus: reset to today ─────────────────────────────────────────────────
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { StatusBar, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
+import type { LinkingOptions } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -26,6 +27,24 @@ const TabIcon = ({ emoji, size }: { emoji: string; size: number }) => (
 );
 
 const Tab = createBottomTabNavigator();
+
+// ─── Deep-link routing (mojamicha://quick-entry → Journal tab) ────────────────
+
+type TabParamList = {
+    Journal: { openQuickEntry?: boolean } | undefined;
+    Favorites: undefined;
+    Stats: undefined;
+    Settings: undefined;
+};
+
+const linking: LinkingOptions<TabParamList> = {
+    prefixes: ["mojamicha://"],
+    config: {
+        screens: {
+            Journal: "quick-entry",
+        },
+    },
+};
 
 // ─── Inner navigator — has access to ThemeProvider context ────────────────────
 
@@ -110,7 +129,7 @@ export default function App() {
                     <SafeAreaProvider>
                         <LanguageProvider>
                             <ThemeProvider>
-                                <NavigationContainer>
+                                <NavigationContainer linking={linking}>
                                     <AppNavigator />
                                 </NavigationContainer>
                             </ThemeProvider>
