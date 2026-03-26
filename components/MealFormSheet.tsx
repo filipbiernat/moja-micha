@@ -79,6 +79,13 @@ const MEAL_TYPES: MealType[] = [
 
 const SNAP_QUICK = 0; // 50% — quick entry
 const SNAP_FULL = 1; // 92% — full form
+const MAX_SUGGESTIONS_QUICK = 3;
+const MAX_SUGGESTIONS_FULL = 7;
+
+/** Sort suggestion strings shortest-first so wrap layout fills rows efficiently. */
+function sortChipsByLength(chips: string[]): string[] {
+    return [...chips].sort((a, b) => a.length - b.length);
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -629,10 +636,9 @@ export const MealFormSheet = forwardRef<
 
     const suggestionScrollContent = useMemo(
         () => ({
+            flexDirection: "row" as const,
+            flexWrap: "wrap" as const,
             paddingVertical: spacing.xs,
-            paddingBottom: spacing.sm,
-            alignItems: "center" as const,
-            paddingRight: spacing.sm,
         }),
         [spacing],
     );
@@ -646,6 +652,7 @@ export const MealFormSheet = forwardRef<
             paddingHorizontal: spacing.md,
             paddingVertical: spacing.xs,
             marginRight: spacing.sm,
+            marginBottom: spacing.xs,
             minHeight: 34,
             justifyContent: "center" as const,
         }),
@@ -938,41 +945,37 @@ export const MealFormSheet = forwardRef<
 
                             {/* Recent meal suggestions */}
                             {filteredSuggestions.length > 0 && (
-                                <BottomSheetScrollView
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    keyboardShouldPersistTaps="handled"
-                                    nestedScrollEnabled
-                                    directionalLockEnabled
-                                    style={styles.suggestionsScroll}
-                                    contentContainerStyle={
-                                        suggestionScrollContent
-                                    }
-                                >
-                                    {filteredSuggestions.map((s) => (
-                                        <TouchableOpacity
-                                            key={s}
-                                            testID={`meal-form-suggestion-chip-${s}`}
-                                            accessibilityLabel={s}
-                                            onPress={() =>
-                                                handlePickSuggestion(s)
-                                            }
-                                            style={suggestionChipStyle}
-                                        >
-                                            <Text
-                                                numberOfLines={1}
-                                                style={{
-                                                    color: colors.textSecondary,
-                                                    fontSize:
-                                                        typography.fontSize.sm,
-                                                    lineHeight: 18,
-                                                }}
+                                <View style={suggestionScrollContent}>
+                                    {sortChipsByLength(
+                                        filteredSuggestions.slice(
+                                            0,
+                                            MAX_SUGGESTIONS_FULL,
+                                        ),
+                                    ).map((s) => (
+                                            <TouchableOpacity
+                                                key={s}
+                                                testID={`meal-form-suggestion-chip-${s}`}
+                                                accessibilityLabel={s}
+                                                onPress={() =>
+                                                    handlePickSuggestion(s)
+                                                }
+                                                style={suggestionChipStyle}
                                             >
-                                                {s}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </BottomSheetScrollView>
+                                                <Text
+                                                    numberOfLines={1}
+                                                    style={{
+                                                        color: colors.textSecondary,
+                                                        fontSize:
+                                                            typography.fontSize
+                                                                .sm,
+                                                        lineHeight: 18,
+                                                    }}
+                                                >
+                                                    {s}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                </View>
                             )}
                             {validationError ? (
                                 <Text
@@ -1217,37 +1220,36 @@ export const MealFormSheet = forwardRef<
 
                         {/* Recent meal suggestions */}
                         {filteredSuggestions.length > 0 && (
-                            <BottomSheetScrollView
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                keyboardShouldPersistTaps="handled"
-                                nestedScrollEnabled
-                                directionalLockEnabled
-                                style={styles.suggestionsScroll}
-                                contentContainerStyle={suggestionScrollContent}
-                            >
-                                {filteredSuggestions.map((s) => (
-                                    <TouchableOpacity
-                                        key={s}
-                                        testID={`meal-form-suggestion-chip-${s}`}
-                                        accessibilityLabel={s}
-                                        onPress={() => handlePickSuggestion(s)}
-                                        style={suggestionChipStyle}
-                                    >
-                                        <Text
-                                            numberOfLines={1}
-                                            style={{
-                                                color: colors.textSecondary,
-                                                fontSize:
-                                                    typography.fontSize.sm,
-                                                lineHeight: 18,
-                                            }}
+                            <View style={suggestionScrollContent}>
+                                {sortChipsByLength(
+                                    filteredSuggestions.slice(
+                                        0,
+                                        MAX_SUGGESTIONS_QUICK,
+                                    ),
+                                ).map((s) => (
+                                        <TouchableOpacity
+                                            key={s}
+                                            testID={`meal-form-suggestion-chip-${s}`}
+                                            accessibilityLabel={s}
+                                            onPress={() =>
+                                                handlePickSuggestion(s)
+                                            }
+                                            style={suggestionChipStyle}
                                         >
-                                            {s}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </BottomSheetScrollView>
+                                            <Text
+                                                numberOfLines={1}
+                                                style={{
+                                                    color: colors.textSecondary,
+                                                    fontSize:
+                                                        typography.fontSize.sm,
+                                                    lineHeight: 18,
+                                                }}
+                                            >
+                                                {s}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                            </View>
                         )}
 
                         {validationError ? (

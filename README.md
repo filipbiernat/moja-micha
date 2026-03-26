@@ -12,7 +12,7 @@
 
 ## What is Moja Micha?
 
-**Moja Micha** (Polish for *My Bowl*) is a no-nonsense, privacy-first meal tracking app that lives entirely on your device. No accounts, no servers, no cloud sync — just you, your food, and your data.
+**Moja Micha** (Polish for _My Bowl_) is a no-nonsense, privacy-first meal tracking app that lives entirely on your device. No accounts, no servers, no cloud sync — just you, your food, and your data.
 
 Log what you eat, when you eat it, track your calories over time, and build a streak worth keeping. Simple as that.
 
@@ -21,6 +21,7 @@ Log what you eat, when you eat it, track your calories over time, and build a st
 ## ✨ Features
 
 ### 📋 Meal Logging
+
 - Log meals with a **single tap** from the main screen via a quick-entry bottom sheet
 - Fields auto-fill based on the **time of day** (Breakfast, Lunch, Dinner, etc.)
 - Free-text meal description — works great with **GBoard dictation**
@@ -28,22 +29,26 @@ Log what you eat, when you eat it, track your calories over time, and build a st
 - Log meals **retroactively** for any past date and time
 
 ### 📅 Browse & Edit History
+
 - **Swipe** between days directly from the Today screen
 - Browse past entries via a **full calendar** view
 - Edit or delete any historical meal entry
 
 ### ⭐ Favorites
+
 - **Star any meal entry** to save it as a favorite
 - Create **custom meal templates** (e.g. "My morning oatmeal — 350 kcal")
 - One-tap reuse: your content is pre-filled, date and time are always fresh
 
 ### 📊 Statistics
+
 - **Bar chart** showing daily calorie intake (7-day or 30-day view)
 - Moving average trend line
 - Daily summary: average, max, min
 - **Streak counter** — how many days in a row you've logged meals
 
 ### ⚙️ Settings
+
 - **Dark / Light theme** — with system default support
 - **Polish / English language** — with system default support
 - **Daily calorie goal** — optional; shows a progress bar when set
@@ -52,21 +57,22 @@ Log what you eat, when you eat it, track your calories over time, and build a st
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React Native (Expo Managed Workflow) |
-| Language | TypeScript |
-| Storage | `expo-sqlite` (local, on-device) |
-| Navigation | React Navigation (Bottom Tabs) |
-| Localization | `i18next` + `expo-localization` |
-| Calendar | `react-native-calendars` |
-| Bottom Sheet | `@gorhom/bottom-sheet` |
+| Layer        | Technology                           |
+| ------------ | ------------------------------------ |
+| Framework    | React Native (Expo Managed Workflow) |
+| Language     | TypeScript                           |
+| Storage      | `expo-sqlite` (local, on-device)     |
+| Navigation   | React Navigation (Bottom Tabs)       |
+| Localization | `i18next` + `expo-localization`      |
+| Calendar     | `react-native-calendars`             |
+| Bottom Sheet | `@gorhom/bottom-sheet`               |
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js ≥ 18
 - Expo CLI: `npm install -g expo-cli`
 - Android device or emulator with Expo Go installed
@@ -111,3 +117,57 @@ moja-micha/
 ## 📝 License
 
 MIT © filipbiernat
+
+---
+
+## 📦 Building APK (Android installable)
+
+You can build a standalone APK (for direct installation) or AAB (for Play Store) using Expo Application Services (EAS Build).
+
+### Prerequisites
+
+- EAS CLI: `npm install -g eas-cli`
+- Expo account: https://expo.dev (free)
+
+### 1. Configure EAS Build
+
+In the project root:
+
+```bash
+eas build:configure
+```
+
+### 2. Build APK for direct install
+
+```bash
+eas build -p android --profile preview
+```
+
+This will generate an `.apk` file (not `.aab`). Download the APK from the link provided after the build completes.
+
+**Note:** The `preview` profile in `eas.json` must contain:
+
+```json
+	"preview": {
+		"distribution": "internal",
+		"android": {
+			"buildType": "apk"
+		}
+	}
+```
+
+### 3. Build AAB for Play Store
+
+```bash
+eas build -p android --profile production
+```
+
+This will generate an `.aab` file for uploading to Google Play.
+
+### 4. Install APK on your device
+
+1. Transfer the `.apk` file to your Android device (USB, email, cloud, etc.)
+2. Enable "Install from unknown sources" in device settings
+3. Open the APK file and install
+
+---
