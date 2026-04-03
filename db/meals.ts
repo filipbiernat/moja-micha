@@ -11,6 +11,7 @@ export interface CreateMealInput {
     time: string;
     mealType: MealType;
     mealText: string;
+    mealComment?: string | null;
     calories?: number | null;
     aiAnalysis?: string | null;
 }
@@ -20,6 +21,7 @@ export interface UpdateMealInput {
     time?: string;
     mealType?: MealType;
     mealText?: string;
+    mealComment?: string | null;
     calories?: number | null;
     aiAnalysis?: string | null;
 }
@@ -61,6 +63,7 @@ export function createMeal(db: DB, input: CreateMealInput): Meal {
             time: input.time,
             mealType: input.mealType,
             mealText: input.mealText,
+            mealComment: input.mealComment ?? null,
             calories: input.calories ?? null,
             aiAnalysis: input.aiAnalysis ?? null,
             isStarred: 0,
@@ -90,6 +93,7 @@ export function updateMeal(
             time: input.time ?? existing.time,
             mealType: input.mealType ?? existing.mealType,
             mealText: input.mealText ?? existing.mealText,
+            mealComment: input.mealComment !== undefined ? input.mealComment : existing.mealComment,
             calories: input.calories !== undefined ? input.calories : existing.calories,
             aiAnalysis: input.aiAnalysis !== undefined ? input.aiAnalysis : existing.aiAnalysis,
             updatedAt: now,

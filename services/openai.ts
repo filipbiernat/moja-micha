@@ -219,6 +219,7 @@ export async function analyzeMeal(
     mealText: string,
     language: string,
     model: string = DEFAULT_OPENAI_MODEL,
+    mealComment?: string | null,
 ): Promise<MealAnalysis> {
     const langInstruction =
         language === 'pl'
@@ -240,7 +241,9 @@ export async function analyzeMeal(
             },
             {
                 role: 'user',
-                content: mealText,
+                content: mealComment && mealComment.trim()
+                    ? `${mealText}\n\nAdditional details: ${mealComment.trim()}`
+                    : mealText,
             },
         ],
         { type: 'json_object' },

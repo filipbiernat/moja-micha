@@ -1,14 +1,37 @@
-import React, { createContext, useContext } from 'react';
-import * as SQLite from 'expo-sqlite';
-import { drizzle, type ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
-import migrations from '../drizzle/migrations';
-import i18n from '../i18n';
+import React, { createContext, useContext } from "react";
+import * as SQLite from "expo-sqlite";
+import { drizzle, type ExpoSQLiteDatabase } from "drizzle-orm/expo-sqlite";
+import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import { Text, View, ActivityIndicator, StyleSheet } from "react-native";
+import migrations from "../drizzle/migrations";
+import i18n from "../i18n";
 
 // ─── Database instance (singleton) ───────────────────────────
 
-const expo = SQLite.openDatabaseSync('moja-micha.db');
+const expo = SQLite.openDatabaseSync("moja-micha.db");
+
+function ensureMealCommentColumn(database: SQLite.SQLiteDatabase): void {
+    try {
+        // Make startup robust even when Metro cache or migration journal gets stale.
+        database.execSync("ALTER TABLE meals ADD COLUMN meal_comment text;");
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (!message.toLowerCase().includes("duplicate column name")) {
+            console.warn("Failed to ensure meal_comment column:", error);
+        }
+    }
+
+    try {
+        // Fix bad legacy values from test runs; optional comment should be empty.
+        database.execSync(
+            "UPDATE meals SET meal_comment = NULL WHERE lower(trim(coalesce(meal_comment, ''))) = 'meal_comment';",
+        );
+    } catch (error) {
+        console.warn("Failed to normalize legacy meal_comment values:", error);
+    }
+}
+
+ensureMealCommentColumn(expo);
 const db = drizzle(expo);
 
 // ─── Context ─────────────────────────────────────────────────
@@ -29,7 +52,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
     if (error) {
         return (
             <View style={styles.container}>
-                <Text style={styles.errorText}>{i18n.t('db.error_title')}</Text>
+                <Text style={styles.errorText}>{i18n.t("db.error_title")}</Text>
                 <Text style={styles.errorDetail}>{error.message}</Text>
             </View>
         );
@@ -39,7 +62,9 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
         return (
             <View style={styles.container}>
                 <ActivityIndicator size="large" color="#00E5FF" />
-                <Text style={styles.loadingText}>{i18n.t('db.loading_text')}</Text>
+                <Text style={styles.loadingText}>
+                    {i18n.t("db.loading_text")}
+                </Text>
             </View>
         );
     }
@@ -58,7 +83,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
 export function useDatabase(): ExpoSQLiteDatabase {
     const context = useContext(DatabaseContext);
     if (!context) {
-        throw new Error('useDatabase must be used within a <DatabaseProvider>');
+        throw new Error("useDatabase must be used within a <DatabaseProvider>");
     }
     return context;
 }
@@ -68,27 +93,27 @@ export function useDatabase(): ExpoSQLiteDatabase {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0F0F1A',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: "#0F0F1A",
+        alignItems: "center",
+        justifyContent: "center",
         padding: 20,
     },
     loadingText: {
-        color: '#FFFFFF',
+        color: "#FFFFFF",
         marginTop: 16,
         fontSize: 16,
         opacity: 0.7,
     },
     errorText: {
-        color: '#FF6B35',
+        color: "#FF6B35",
         fontSize: 20,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 8,
     },
     errorDetail: {
-        color: '#FFFFFF',
+        color: "#FFFFFF",
         fontSize: 14,
         opacity: 0.6,
-        textAlign: 'center',
+        textAlign: "center",
     },
 });

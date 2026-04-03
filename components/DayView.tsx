@@ -324,6 +324,18 @@ export function DayView({
                     >
                         {item.mealText}
                     </Text>
+                    {item.mealComment ? (
+                        <Text
+                            style={{
+                                color: colors.textSecondary,
+                                fontSize: typography.fontSize.sm,
+                                marginTop: spacing.xs,
+                                fontStyle: "italic",
+                            }}
+                        >
+                            {item.mealComment}
+                        </Text>
+                    ) : null}
                     {displayCalories !== null ? (
                         <Text
                             style={{
@@ -584,10 +596,7 @@ export function DayView({
 
             {meals.length > 0 && (
                 <View
-                    style={[
-                        styles.listControls,
-                        { marginBottom: spacing.sm },
-                    ]}
+                    style={[styles.listControls, { marginBottom: spacing.sm }]}
                 >
                     <SortCycleButton
                         testID="dayview-sort-toggle"

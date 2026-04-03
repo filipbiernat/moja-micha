@@ -108,6 +108,7 @@ export const MealFormSheet = forwardRef<
 
     // ── Field state ──────────────────────────────────────────────────────────
     const [mealText, setMealText] = useState("");
+    const [mealComment, setMealComment] = useState("");
     const [mealType, setMealType] = useState<MealType>("snack");
     const [selectedDate, setSelectedDate] = useState(getLocalDateString);
     const [selectedTime, setSelectedTime] = useState(getLocalTimeString);
@@ -156,6 +157,7 @@ export const MealFormSheet = forwardRef<
             setMode("add");
             setEditMealId(null);
             setMealText("");
+            setMealComment("");
             setMealType(getMealTypeForCurrentTime(now));
             setSelectedDate(date);
             setSelectedTime(getLocalTimeString());
@@ -187,6 +189,7 @@ export const MealFormSheet = forwardRef<
             setMode("edit");
             setEditMealId(meal.id);
             setMealText(meal.mealText);
+            setMealComment(meal.mealComment ?? "");
             setMealType(meal.mealType as MealType);
             setSelectedDate(meal.date);
             setSelectedTime(meal.time);
@@ -334,6 +337,7 @@ export const MealFormSheet = forwardRef<
         let savedDate = selectedDate;
         let savedCalories: number | null = null;
         let savedNotes: string | null = null;
+        let savedComment: string | null = null;
 
         try {
             const rawCalories = calories.trim()
@@ -344,6 +348,7 @@ export const MealFormSheet = forwardRef<
                     ? rawCalories
                     : null;
             const cleanNotes = notes.trim() || null;
+            const cleanComment = mealComment.trim() || null;
             const originalStructuredAnalysis =
                 originalAiAnalysisWasStructured && originalAiAnalysisValue
                     ? parseMealAnalysisValue(originalAiAnalysisValue)
@@ -364,6 +369,7 @@ export const MealFormSheet = forwardRef<
                   : cleanNotes;
             savedCalories = cleanCalories;
             savedNotes = cleanNotes;
+            savedComment = cleanComment;
 
             if (mode === "add") {
                 const created = createMeal(db, {
@@ -371,6 +377,7 @@ export const MealFormSheet = forwardRef<
                     time: selectedTime,
                     mealType,
                     mealText: trimmed,
+                    mealComment: cleanComment,
                     calories: cleanCalories,
                     aiAnalysis: nextAiAnalysisValue,
                 });
@@ -381,6 +388,7 @@ export const MealFormSheet = forwardRef<
                     time: selectedTime,
                     mealType,
                     mealText: trimmed,
+                    mealComment: cleanComment,
                     calories: cleanCalories,
                     aiAnalysis: nextAiAnalysisValue,
                 });
@@ -422,10 +430,9 @@ export const MealFormSheet = forwardRef<
             mode === "add" &&
             (savedCalories === null || savedNotes === null);
         const canReAnalyzeOnEdit =
-            hasApiKey &&
-            savedMealId !== null &&
-            mode === "edit";
-        const shouldAutoSummary = hasApiKey && (mode === "add" || mode === "edit");
+            hasApiKey && savedMealId !== null && mode === "edit";
+        const shouldAutoSummary =
+            hasApiKey && (mode === "add" || mode === "edit");
 
         if (canReAnalyzeOnEdit) {
             // Ask user whether to re-run AI analysis on the edited meal
@@ -443,7 +450,10 @@ export const MealFormSheet = forwardRef<
                                 triggerAutoDailySummaries(
                                     [
                                         { date: savedDate, time: selectedTime },
-                                        { date: originalMealDate, time: originalMealTime },
+                                        {
+                                            date: originalMealDate,
+                                            time: originalMealTime,
+                                        },
                                     ],
                                     apiKey,
                                     model,
@@ -456,7 +466,13 @@ export const MealFormSheet = forwardRef<
                         onPress: () => {
                             const mealIdForReAnalysis = savedMealId!;
                             setIsAnalyzing(true);
-                            analyzeMeal(apiKey!, trimmed, i18n.language ?? "en", model)
+                            analyzeMeal(
+                                apiKey!,
+                                trimmed,
+                                i18n.language ?? "en",
+                                model,
+                                savedComment,
+                            )
                                 .then((result) => {
                                     const patch: {
                                         calories?: number | null;
@@ -469,15 +485,20 @@ export const MealFormSheet = forwardRef<
                                         result.ingredients !== null ||
                                         result.analysis !== null
                                     ) {
-                                        patch.aiAnalysis = serializeMealAnalysisValue({
-                                            analysis: result.analysis,
-                                            calories: result.calories,
-                                            ingredients: result.ingredients,
-                                        });
+                                        patch.aiAnalysis =
+                                            serializeMealAnalysisValue({
+                                                analysis: result.analysis,
+                                                calories: result.calories,
+                                                ingredients: result.ingredients,
+                                            });
                                     }
                                     if (Object.keys(patch).length > 0) {
                                         try {
-                                            updateMeal(db, mealIdForReAnalysis, patch);
+                                            updateMeal(
+                                                db,
+                                                mealIdForReAnalysis,
+                                                patch,
+                                            );
                                         } catch {
                                             // ignore
                                         }
@@ -497,7 +518,10 @@ export const MealFormSheet = forwardRef<
                                     if (shouldAutoSummary && apiKey) {
                                         triggerAutoDailySummaries(
                                             [
-                                                { date: savedDate, time: selectedTime },
+                                                {
+                                                    date: savedDate,
+                                                    time: selectedTime,
+                                                },
                                                 {
                                                     date: originalMealDate,
                                                     time: originalMealTime,
@@ -535,7 +559,13 @@ export const MealFormSheet = forwardRef<
         setIsAnalyzing(true);
         const mealIdForAi = savedMealId!;
 
-        analyzeMeal(apiKey!, trimmed, i18n.language ?? "en", model)
+        analyzeMeal(
+            apiKey!,
+            trimmed,
+            i18n.language ?? "en",
+            model,
+            savedComment,
+        )
             .then((result) => {
                 const patch: {
                     calories?: number | null;
@@ -586,6 +616,7 @@ export const MealFormSheet = forwardRef<
             });
     }, [
         mealText,
+        mealComment,
         calories,
         notes,
         mode,
@@ -1042,29 +1073,28 @@ export const MealFormSheet = forwardRef<
                                             MAX_SUGGESTIONS_FULL,
                                         ),
                                     ).map((s) => (
-                                            <TouchableOpacity
-                                                key={s}
-                                                testID={`meal-form-suggestion-chip-${s}`}
-                                                accessibilityLabel={s}
-                                                onPress={() =>
-                                                    handlePickSuggestion(s)
-                                                }
-                                                style={suggestionChipStyle}
+                                        <TouchableOpacity
+                                            key={s}
+                                            testID={`meal-form-suggestion-chip-${s}`}
+                                            accessibilityLabel={s}
+                                            onPress={() =>
+                                                handlePickSuggestion(s)
+                                            }
+                                            style={suggestionChipStyle}
+                                        >
+                                            <Text
+                                                numberOfLines={1}
+                                                style={{
+                                                    color: colors.textSecondary,
+                                                    fontSize:
+                                                        typography.fontSize.sm,
+                                                    lineHeight: 18,
+                                                }}
                                             >
-                                                <Text
-                                                    numberOfLines={1}
-                                                    style={{
-                                                        color: colors.textSecondary,
-                                                        fontSize:
-                                                            typography.fontSize
-                                                                .sm,
-                                                        lineHeight: 18,
-                                                    }}
-                                                >
-                                                    {s}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        ))}
+                                                {s}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
                                 </View>
                             )}
                             {validationError ? (
@@ -1106,14 +1136,41 @@ export const MealFormSheet = forwardRef<
                                 value={calories}
                             />
 
-                            {/* Notes */}
+                            {/* User comment */}
                             <Text style={sectionLabel}>
-                                {t("mealForm.field_notes")}
+                                {t("mealForm.field_comment")}
+                            </Text>
+                            <BottomSheetTextInput
+                                multiline
+                                onChangeText={setMealComment}
+                                placeholder={t("mealForm.placeholder_comment")}
+                                placeholderTextColor={colors.inputPlaceholder}
+                                style={[
+                                    styles.textInput,
+                                    {
+                                        backgroundColor: colors.inputBackground,
+                                        borderColor: colors.inputBorder,
+                                        borderRadius: borderRadius.md,
+                                        color: colors.textPrimary,
+                                        fontSize: typography.fontSize.md,
+                                        marginBottom: spacing.md,
+                                        padding: spacing.md,
+                                        minHeight: 64,
+                                    },
+                                ]}
+                                testID="meal-form-comment-input"
+                                textAlignVertical="top"
+                                value={mealComment}
+                            />
+
+                            {/* AI analysis notes */}
+                            <Text style={sectionLabel}>
+                                {t("mealForm.field_ai_notes")}
                             </Text>
                             <BottomSheetTextInput
                                 multiline
                                 onChangeText={setNotes}
-                                placeholder={t("mealForm.placeholder_notes")}
+                                placeholder={t("mealForm.placeholder_ai_notes")}
                                 placeholderTextColor={colors.inputPlaceholder}
                                 style={[
                                     styles.textInput,
@@ -1317,28 +1374,26 @@ export const MealFormSheet = forwardRef<
                                         MAX_SUGGESTIONS_QUICK,
                                     ),
                                 ).map((s) => (
-                                        <TouchableOpacity
-                                            key={s}
-                                            testID={`meal-form-suggestion-chip-${s}`}
-                                            accessibilityLabel={s}
-                                            onPress={() =>
-                                                handlePickSuggestion(s)
-                                            }
-                                            style={suggestionChipStyle}
+                                    <TouchableOpacity
+                                        key={s}
+                                        testID={`meal-form-suggestion-chip-${s}`}
+                                        accessibilityLabel={s}
+                                        onPress={() => handlePickSuggestion(s)}
+                                        style={suggestionChipStyle}
+                                    >
+                                        <Text
+                                            numberOfLines={1}
+                                            style={{
+                                                color: colors.textSecondary,
+                                                fontSize:
+                                                    typography.fontSize.sm,
+                                                lineHeight: 18,
+                                            }}
                                         >
-                                            <Text
-                                                numberOfLines={1}
-                                                style={{
-                                                    color: colors.textSecondary,
-                                                    fontSize:
-                                                        typography.fontSize.sm,
-                                                    lineHeight: 18,
-                                                }}
-                                            >
-                                                {s}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
+                                            {s}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
                             </View>
                         )}
 

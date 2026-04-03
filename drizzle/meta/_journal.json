@@ -15,6 +15,13 @@
       "when": 1774215894390,
       "tag": "0001_worthless_micromacro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1743725400000,
+      "tag": "0002_add_meal_comment",
+      "breakpoints": true
     }
   ]
 }

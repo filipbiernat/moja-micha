@@ -9,6 +9,7 @@ export const meals = sqliteTable('meals', {
     time: text('time').notNull(),              // HH:MM
     mealType: text('meal_type').notNull(),     // breakfast | second_breakfast | lunch | afternoon_snack | dinner | snack
     mealText: text('meal_text').notNull(),
+    mealComment: text('meal_comment'),
     calories: integer('calories'),
     aiAnalysis: text('ai_analysis'),
     isStarred: integer('is_starred').notNull().default(0), // 0 or 1
