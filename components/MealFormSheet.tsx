@@ -415,17 +415,107 @@ export const MealFormSheet = forwardRef<
                 return DEFAULT_OPENAI_MODEL;
             }
         })();
-        const needsAi =
-            apiKey &&
-            apiKey.trim() !== "" &&
+        const hasApiKey = Boolean(apiKey && apiKey.trim() !== "");
+        const needsAiOnAdd =
+            hasApiKey &&
             savedMealId !== null &&
             mode === "add" &&
             (savedCalories === null || savedNotes === null);
-        const shouldAutoSummary =
-            Boolean(apiKey && apiKey.trim() !== "") &&
-            (mode === "add" || mode === "edit");
+        const canReAnalyzeOnEdit =
+            hasApiKey &&
+            savedMealId !== null &&
+            mode === "edit";
+        const shouldAutoSummary = hasApiKey && (mode === "add" || mode === "edit");
 
-        if (!needsAi) {
+        if (canReAnalyzeOnEdit) {
+            // Ask user whether to re-run AI analysis on the edited meal
+            Alert.alert(
+                t("mealForm.reanalyze_title"),
+                t("mealForm.reanalyze_message"),
+                [
+                    {
+                        text: t("mealForm.reanalyze_no"),
+                        style: "cancel",
+                        onPress: () => {
+                            bottomSheetRef.current?.close();
+                            onSaved(savedDate);
+                            if (shouldAutoSummary && apiKey) {
+                                triggerAutoDailySummaries(
+                                    [
+                                        { date: savedDate, time: selectedTime },
+                                        { date: originalMealDate, time: originalMealTime },
+                                    ],
+                                    apiKey,
+                                    model,
+                                );
+                            }
+                        },
+                    },
+                    {
+                        text: t("mealForm.reanalyze_yes"),
+                        onPress: () => {
+                            const mealIdForReAnalysis = savedMealId!;
+                            setIsAnalyzing(true);
+                            analyzeMeal(apiKey!, trimmed, i18n.language ?? "en", model)
+                                .then((result) => {
+                                    const patch: {
+                                        calories?: number | null;
+                                        aiAnalysis?: string | null;
+                                    } = {};
+                                    if (result.calories !== null) {
+                                        patch.calories = result.calories;
+                                    }
+                                    if (
+                                        result.ingredients !== null ||
+                                        result.analysis !== null
+                                    ) {
+                                        patch.aiAnalysis = serializeMealAnalysisValue({
+                                            analysis: result.analysis,
+                                            calories: result.calories,
+                                            ingredients: result.ingredients,
+                                        });
+                                    }
+                                    if (Object.keys(patch).length > 0) {
+                                        try {
+                                            updateMeal(db, mealIdForReAnalysis, patch);
+                                        } catch {
+                                            // ignore
+                                        }
+                                    }
+                                })
+                                .catch((err: unknown) => {
+                                    console.warn("AI re-analysis failed:", err);
+                                    Alert.alert(
+                                        t("mealForm.ai_error_title"),
+                                        t("mealForm.ai_error_message"),
+                                    );
+                                })
+                                .finally(() => {
+                                    setIsAnalyzing(false);
+                                    bottomSheetRef.current?.close();
+                                    onSaved(savedDate);
+                                    if (shouldAutoSummary && apiKey) {
+                                        triggerAutoDailySummaries(
+                                            [
+                                                { date: savedDate, time: selectedTime },
+                                                {
+                                                    date: originalMealDate,
+                                                    time: originalMealTime,
+                                                },
+                                            ],
+                                            apiKey,
+                                            model,
+                                        );
+                                    }
+                                });
+                        },
+                    },
+                ],
+            );
+            return;
+        }
+
+        if (!needsAiOnAdd) {
             bottomSheetRef.current?.close();
             onSaved(savedDate);
             if (shouldAutoSummary && apiKey) {

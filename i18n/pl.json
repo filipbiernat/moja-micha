@@ -150,7 +150,11 @@
     "delete_error": "Nie udało się usunąć posiłku.",
     "analyzing": "Analizuję z AI…",
     "ai_error_title": "Błąd AI",
-    "ai_error_message": "Nie udało się pobrać analizy AI. Posiłek został zapisany."
+    "ai_error_message": "Nie udało się pobrać analizy AI. Posiłek został zapisany.",
+    "reanalyze_title": "Powtórzyć analizę AI?",
+    "reanalyze_message": "Czy chcesz ponownie przeanalizować posiłek przez AI (kalorie + notatki)?",
+    "reanalyze_yes": "Tak, analizuj",
+    "reanalyze_no": "Nie, zostaw"
   },
   "favorites": {
     "tab_templates": "Szablony",

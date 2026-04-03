@@ -150,7 +150,11 @@
     "delete_error": "Could not delete the meal.",
     "analyzing": "Analyzing with AI…",
     "ai_error_title": "AI Error",
-    "ai_error_message": "Could not get AI analysis. The meal has been saved."
+    "ai_error_message": "Could not get AI analysis. The meal has been saved.",
+    "reanalyze_title": "Re-run AI analysis?",
+    "reanalyze_message": "Do you want to re-analyse this meal with AI (calories + notes)?",
+    "reanalyze_yes": "Yes, analyse",
+    "reanalyze_no": "No, keep as is"
   },
   "favorites": {
     "tab_templates": "Templates",
