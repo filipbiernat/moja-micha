@@ -118,7 +118,6 @@ export const MealFormSheet = forwardRef<
     // ── UI state ─────────────────────────────────────────────────────────────
     const [validationError, setValidationError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [favoritesSections, setFavoritesSections] = useState<
@@ -233,7 +232,6 @@ export const MealFormSheet = forwardRef<
     }, []);
 
     const handleSheetClose = useCallback(() => {
-        setIsAnalyzing(false);
         setValidationError(null);
         setShowDatePicker(false);
         setShowTimePicker(false);
@@ -434,6 +432,93 @@ export const MealFormSheet = forwardRef<
         const shouldAutoSummary =
             hasApiKey && (mode === "add" || mode === "edit");
 
+        const closeAndRefresh = (triggerSummary: boolean = true) => {
+            bottomSheetRef.current?.close();
+            onSaved(savedDate);
+            if (triggerSummary && shouldAutoSummary && apiKey) {
+                triggerAutoDailySummaries(
+                    [
+                        { date: savedDate, time: selectedTime },
+                        { date: originalMealDate, time: originalMealTime },
+                    ],
+                    apiKey,
+                    model,
+                );
+            }
+        };
+
+        const runAiInBackground = (
+            mealId: number,
+            forceOverwriteExisting: boolean,
+        ) => {
+            analyzeMeal(
+                apiKey!,
+                trimmed,
+                i18n.language ?? "en",
+                model,
+                savedComment,
+            )
+                .then((result) => {
+                    const patch: {
+                        calories?: number | null;
+                        aiAnalysis?: string | null;
+                    } = {};
+
+                    const shouldUpdateCalories = forceOverwriteExisting
+                        ? result.calories !== null
+                        : savedCalories === null && result.calories !== null;
+                    if (shouldUpdateCalories) {
+                        patch.calories = result.calories;
+                    }
+
+                    const shouldUpdateAnalysis = forceOverwriteExisting
+                        ? result.ingredients !== null ||
+                          result.analysis !== null
+                        : result.ingredients !== null ||
+                          (savedNotes === null && result.analysis !== null);
+                    if (shouldUpdateAnalysis) {
+                        patch.aiAnalysis = serializeMealAnalysisValue({
+                            analysis: forceOverwriteExisting
+                                ? result.analysis
+                                : (savedNotes ?? result.analysis),
+                            calories: forceOverwriteExisting
+                                ? result.calories
+                                : (savedCalories ?? result.calories),
+                            ingredients: result.ingredients,
+                        });
+                    }
+
+                    if (Object.keys(patch).length === 0) {
+                        return;
+                    }
+
+                    try {
+                        updateMeal(db, mealId, patch);
+                        onSaved(savedDate);
+                    } catch {
+                        // Ignore patch race (e.g. meal deleted after save).
+                    }
+                })
+                .catch((err: unknown) => {
+                    console.warn("AI background analysis failed:", err);
+                })
+                .finally(() => {
+                    if (shouldAutoSummary && apiKey) {
+                        triggerAutoDailySummaries(
+                            [
+                                { date: savedDate, time: selectedTime },
+                                {
+                                    date: originalMealDate,
+                                    time: originalMealTime,
+                                },
+                            ],
+                            apiKey,
+                            model,
+                        );
+                    }
+                });
+        };
+
         if (canReAnalyzeOnEdit) {
             // Ask user whether to re-run AI analysis on the edited meal
             Alert.alert(
@@ -444,94 +529,15 @@ export const MealFormSheet = forwardRef<
                         text: t("mealForm.reanalyze_no"),
                         style: "cancel",
                         onPress: () => {
-                            bottomSheetRef.current?.close();
-                            onSaved(savedDate);
-                            if (shouldAutoSummary && apiKey) {
-                                triggerAutoDailySummaries(
-                                    [
-                                        { date: savedDate, time: selectedTime },
-                                        {
-                                            date: originalMealDate,
-                                            time: originalMealTime,
-                                        },
-                                    ],
-                                    apiKey,
-                                    model,
-                                );
-                            }
+                            closeAndRefresh();
                         },
                     },
                     {
                         text: t("mealForm.reanalyze_yes"),
                         onPress: () => {
                             const mealIdForReAnalysis = savedMealId!;
-                            setIsAnalyzing(true);
-                            analyzeMeal(
-                                apiKey!,
-                                trimmed,
-                                i18n.language ?? "en",
-                                model,
-                                savedComment,
-                            )
-                                .then((result) => {
-                                    const patch: {
-                                        calories?: number | null;
-                                        aiAnalysis?: string | null;
-                                    } = {};
-                                    if (result.calories !== null) {
-                                        patch.calories = result.calories;
-                                    }
-                                    if (
-                                        result.ingredients !== null ||
-                                        result.analysis !== null
-                                    ) {
-                                        patch.aiAnalysis =
-                                            serializeMealAnalysisValue({
-                                                analysis: result.analysis,
-                                                calories: result.calories,
-                                                ingredients: result.ingredients,
-                                            });
-                                    }
-                                    if (Object.keys(patch).length > 0) {
-                                        try {
-                                            updateMeal(
-                                                db,
-                                                mealIdForReAnalysis,
-                                                patch,
-                                            );
-                                        } catch {
-                                            // ignore
-                                        }
-                                    }
-                                })
-                                .catch((err: unknown) => {
-                                    console.warn("AI re-analysis failed:", err);
-                                    Alert.alert(
-                                        t("mealForm.ai_error_title"),
-                                        t("mealForm.ai_error_message"),
-                                    );
-                                })
-                                .finally(() => {
-                                    setIsAnalyzing(false);
-                                    bottomSheetRef.current?.close();
-                                    onSaved(savedDate);
-                                    if (shouldAutoSummary && apiKey) {
-                                        triggerAutoDailySummaries(
-                                            [
-                                                {
-                                                    date: savedDate,
-                                                    time: selectedTime,
-                                                },
-                                                {
-                                                    date: originalMealDate,
-                                                    time: originalMealTime,
-                                                },
-                                            ],
-                                            apiKey,
-                                            model,
-                                        );
-                                    }
-                                });
+                            closeAndRefresh(false);
+                            runAiInBackground(mealIdForReAnalysis, true);
                         },
                     },
                 ],
@@ -540,80 +546,15 @@ export const MealFormSheet = forwardRef<
         }
 
         if (!needsAiOnAdd) {
-            bottomSheetRef.current?.close();
-            onSaved(savedDate);
-            if (shouldAutoSummary && apiKey) {
-                triggerAutoDailySummaries(
-                    [
-                        { date: savedDate, time: selectedTime },
-                        { date: originalMealDate, time: originalMealTime },
-                    ],
-                    apiKey,
-                    model,
-                );
-            }
+            closeAndRefresh();
             return;
         }
 
-        // Run AI enrichment asynchronously, keeping sheet open
-        setIsAnalyzing(true);
+        // Run AI enrichment in the background after closing the form.
         const mealIdForAi = savedMealId!;
 
-        analyzeMeal(
-            apiKey!,
-            trimmed,
-            i18n.language ?? "en",
-            model,
-            savedComment,
-        )
-            .then((result) => {
-                const patch: {
-                    calories?: number | null;
-                    aiAnalysis?: string | null;
-                } = {};
-                if (savedCalories === null && result.calories !== null) {
-                    patch.calories = result.calories;
-                }
-                if (
-                    result.ingredients !== null ||
-                    (savedNotes === null && result.analysis !== null)
-                ) {
-                    patch.aiAnalysis = serializeMealAnalysisValue({
-                        analysis: savedNotes ?? result.analysis,
-                        calories: savedCalories ?? result.calories,
-                        ingredients: result.ingredients,
-                    });
-                }
-                if (Object.keys(patch).length > 0) {
-                    try {
-                        updateMeal(db, mealIdForAi, patch);
-                    } catch {
-                        // ignore — meal already saved
-                    }
-                }
-            })
-            .catch((err: unknown) => {
-                console.warn("AI analysis failed:", err);
-                Alert.alert(
-                    t("mealForm.ai_error_title"),
-                    t("mealForm.ai_error_message"),
-                );
-            })
-            .finally(() => {
-                setIsAnalyzing(false);
-                bottomSheetRef.current?.close();
-                onSaved(savedDate);
-                if (shouldAutoSummary && apiKey) {
-                    triggerAutoDailySummaries(
-                        [
-                            { date: savedDate, time: selectedTime },
-                            { date: originalMealDate, time: originalMealTime },
-                        ],
-                        apiKey,
-                        model,
-                    );
-                }
-            });
+        closeAndRefresh(false);
+        runAiInBackground(mealIdForAi, false);
     }, [
         mealText,
         mealComment,
@@ -1265,16 +1206,15 @@ export const MealFormSheet = forwardRef<
                                 style={[
                                     styles.saveBtn,
                                     {
-                                        backgroundColor:
-                                            isSaving || isAnalyzing
-                                                ? colors.primaryMuted
-                                                : colors.primary,
+                                        backgroundColor: isSaving
+                                            ? colors.primaryMuted
+                                            : colors.primary,
                                         borderRadius: borderRadius.md,
                                         paddingVertical: spacing.md,
                                     },
                                 ]}
                                 onPress={handleSave}
-                                disabled={isSaving || isAnalyzing}
+                                disabled={isSaving}
                                 activeOpacity={0.85}
                                 testID="meal-form-save-btn"
                                 accessibilityLabel={t("mealForm.btn_save")}
@@ -1288,9 +1228,7 @@ export const MealFormSheet = forwardRef<
                                 >
                                     {isSaving
                                         ? t("mealForm.btn_saving")
-                                        : isAnalyzing
-                                          ? t("mealForm.analyzing")
-                                          : t("mealForm.btn_save")}
+                                        : t("mealForm.btn_save")}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -1486,16 +1424,15 @@ export const MealFormSheet = forwardRef<
                                 style={[
                                     styles.quickSaveBtn,
                                     {
-                                        backgroundColor:
-                                            isSaving || isAnalyzing
-                                                ? colors.primaryMuted
-                                                : colors.primary,
+                                        backgroundColor: isSaving
+                                            ? colors.primaryMuted
+                                            : colors.primary,
                                         borderRadius: borderRadius.md,
                                         paddingVertical: spacing.md,
                                     },
                                 ]}
                                 onPress={handleSave}
-                                disabled={isSaving || isAnalyzing}
+                                disabled={isSaving}
                                 activeOpacity={0.85}
                                 testID="meal-form-quick-save-btn"
                                 accessibilityLabel={t("mealForm.btn_save")}
@@ -1509,9 +1446,7 @@ export const MealFormSheet = forwardRef<
                                 >
                                     {isSaving
                                         ? t("mealForm.btn_saving")
-                                        : isAnalyzing
-                                          ? t("mealForm.analyzing")
-                                          : t("mealForm.btn_save")}
+                                        : t("mealForm.btn_save")}
                                 </Text>
                             </TouchableOpacity>
                         </View>
